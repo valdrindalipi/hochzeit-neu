@@ -526,7 +526,9 @@ async function fetchState() {
   try {
     const r = await fetch(API, { signal: AbortSignal.timeout(5000) });
     if (!r.ok) throw new Error();
-    const data = await r.json();
+    let data = await r.json();
+    // Fix: Upstash sometimes returns double-stringified JSON
+    if (typeof data === 'string') { try { data = JSON.parse(data); } catch {} }
     if (migrateState(data)) {
       state = data;
       localStorage.setItem(LS_KEY, JSON.stringify(state));
