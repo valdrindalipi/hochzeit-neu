@@ -49,6 +49,11 @@
   .kurs-badge:hover { background:rgba(201,168,76,.12); }
   .kurs-badge .rate-val { color:var(--gold); font-weight:600; }
 
+  /* LANG TOGGLE */
+  .lang-toggle { display:inline-flex; border-radius:8px; overflow:hidden; border:1px solid rgba(201,168,76,.3); }
+  .lang-btn { padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; border:none; background:transparent; color:rgba(232,213,160,.4); font-family:"Inter",sans-serif; transition:all .15s; letter-spacing:.5px; }
+  .lang-btn.active { background:var(--gold); color:var(--midnight); }
+
   /* CONTAINER */
   .container { max-width:920px; margin:0 auto; padding:26px 16px 64px; }
   .page { display:none; }
@@ -237,6 +242,7 @@
       <span>CHF</span>
       <span style="font-size:10px;opacity:.5">↻</span>
     </div>
+    <div class="lang-toggle"><button class="lang-btn active" id="lang-de" onclick="setLang('de',this)">DE 🇩🇪</button><button class="lang-btn" id="lang-al" onclick="setLang('al',this)">AL 🇦🇱</button></div>
     <input class="who-input" id="who-input" placeholder="Valdrin / Katia" maxlength="20">
   </div>
 </div>
@@ -590,7 +596,7 @@ function renderCostTable() {
     // Offen cell: show original currency if EUR, plus CHF below
     let offenHtml;
     if (offenCHF <= 0) {
-      offenHtml = '✓ bezahlt';
+      offenHtml = t('bezahlt_label');
     } else if (isEUR) {
       offenHtml = `EUR ${Math.round(offenOrig).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`;
     } else {
@@ -772,10 +778,10 @@ function renderTodos() {
   const pct=total>0?Math.round(done/total*100):0;
   document.getElementById('todo-pct').textContent=pct+'%';
   document.getElementById('todo-prog-bar').style.width=pct+'%';
-  document.getElementById('todo-prog-label').textContent=`${done} von ${total} erledigt`;
+  document.getElementById('todo-prog-label').textContent=`${done} ${t("todo_von")} ${total} ${t("progress_paid")}`;
   const list=document.getElementById('todo-list');
   const filtered=state.todos.filter(t=>todoFilter==='all'?true:todoFilter==='done'?t.done:!t.done);
-  if (!filtered.length) { list.innerHTML='<div class="todo-empty">Keine Aufgaben hier.</div>'; return; }
+  if (!filtered.length) { list.innerHTML='<div class="todo-empty">'+t('todo_empty')+'</div>'; return; }
   list.innerHTML=filtered.map(t=>`
     <div class="todo-item ${t.done?'done':''}">
       <div class="todo-check" onclick="toggleTodo(${t.id})"><span class="todo-check-icon">✓</span></div>
@@ -783,9 +789,9 @@ function renderTodos() {
         <div class="todo-text">${escHtml(t.text)}</div>
         <div class="todo-meta">
           <span class="todo-cat cat-${t.category}">${t.category}</span>
-          ${t.done&&t.doneBy?`<span>✓ ${escHtml(t.doneBy)}</span>`:''}
+          ${t.done&&t.doneBy?`<span>${t('todo_erledigt_von')} ${escHtml(t.doneBy)}</span>`:''}
           ${t.done&&t.doneAt?`<span>${fmtTime(t.doneAt)}</span>`:''}
-          ${!t.done&&t.addedBy?`<span>von ${escHtml(t.addedBy)}</span>`:''}
+          ${!t.done&&t.addedBy?`<span>${t('todo_von')} ${escHtml(t.addedBy)}</span>`:''}
         </div>
       </div>
       <button class="todo-del" onclick="deleteTodo(${t.id})">×</button>
@@ -822,7 +828,7 @@ function deleteTodo(id) {
 function renderHistory() {
   const list=document.getElementById('history-list');
   if(!state.history||!state.history.length){
-    list.innerHTML='<div class="history-empty">Noch keine Änderungen — wird automatisch aufgezeichnet.</div>'; return;
+    list.innerHTML='<div class="history-empty">'+t('history_empty')+'</div>'; return;
   }
   const icons={todo_add:'✅',todo_toggle:'🔄',todo_del:'🗑️',cost:'💰',savings:'🏦',finance:'💵',reset:'🔄'};
   list.innerHTML=state.history.map(h=>`
@@ -902,6 +908,201 @@ document.getElementById('who-input').addEventListener('change',e=>{
 });
 document.getElementById('new-todo-text').addEventListener('keydown',e=>{ if(e.key==='Enter') addTodo(); });
 
+// ── TRANSLATIONS ──────────────────────────────────────────────────────────────
+let currentLang = localStorage.getItem('hochzeit_lang') || 'de';
+
+const T = {
+  de: {
+    headerDate:       '23. Juli 2026 · Hochzeit Dashboard',
+    tab_kosten:       '💐 Kosten',
+    tab_gespart:      '🏦 Gespartes',
+    tab_todos:        '✅ Checkliste',
+    tab_history:      '📋 History',
+    hint_kosten:      '✏️   Beträge anklicken zum Ändern · Währung pro Zeile wählbar · Totals immer in CHF',
+    hint_gespart:     '🏦   Gespartes Geld — Währung pro Zeile wählbar, Totals in CHF',
+    kpi_total:        '🎯 Gesamtkosten',
+    kpi_paid:         '✅ Bezahlt',
+    kpi_open:         '⏳ Offen',
+    kpi_saved:        '💰 Total Gespart',
+    progress_title:   'Zahlungsfortschritt',
+    progress_paid:    'bezahlt',
+    sec_kosten:       '💐 Hochzeitskosten',
+    sec_uebersicht:   '📊 Gesamtübersicht',
+    sec_beitraege:    '💵 Zusätzliche Beiträge',
+    sec_gespart:      '🏦 Gespartes Geld',
+    sec_history:      '📋 Änderungshistory',
+    th_posten:        'Posten',
+    th_waehrung:      'Währung',
+    th_kosten:        'Kosten',
+    th_bezahlt:       'Bezahlt',
+    th_offen:         'Offen (CHF)',
+    th_quelle:        'Quelle',
+    th_betrag:        'Betrag',
+    th_inchf:         'In CHF',
+    total:            'TOTAL',
+    total_gespart:    'TOTAL GESPART',
+    lbl_noch_offen:   '💐 Noch offen',
+    lbl_verfuegbar:   '🏦 Total verfügbar',
+    lbl_uebrig:       '✨ Übrig nach Hochzeit',
+    lbl_fehlend:      '⚠️ Fehlend',
+    lbl_vater:        '👨‍👧 Beitrag Vater Vali',
+    lbl_eltern:       '👨‍👧 Beitrag Eltern Katia',
+    lbl_total_inkl:   '💰 Total inkl. Beiträge',
+    alles_chf:        'alles in CHF',
+    btn_reset:        'Zurücksetzen',
+    btn_add:          '+ Hinzufügen',
+    todo_placeholder: 'Neue Aufgabe…',
+    filter_all:       'Alle',
+    filter_open:      'Offen',
+    filter_done:      'Erledigt',
+    todo_von:         'von',
+    todo_erledigt_von:'Erledigt von',
+    history_empty:    'Noch keine Änderungen — wird automatisch aufgezeichnet.',
+    todo_empty:       'Keine Aufgaben hier.',
+    bezahlt_label:    '✓ bezahlt',
+    aendern:          'ändern',
+    who_placeholder:  'Valdrin / Katia',
+    footer:           '💍 Hochzeit Valdrin & Katia Dalipi · 23. Juli 2026',
+    cats: ['Behörden','Gäste','Deko','Musik','Essen','Ringe','Outfit','Logistik','Fotos','Finanzen','Sonstiges'],
+  },
+  al: {
+    headerDate:       '23 Korrik 2026 · Paneli i Dasmës',
+    tab_kosten:       '💐 Shpenzimet',
+    tab_gespart:      '🏦 Kursimet',
+    tab_todos:        '✅ Listë Detyrash',
+    tab_history:      '📋 Historia',
+    hint_kosten:      '✏️   Kliko mbi shumën për ta ndryshuar · Valuta e zgjedhshme për çdo rresht · Totalet gjithmonë në CHF',
+    hint_gespart:     '🏦   Paratë e kursyera — Valuta e zgjedhshme për çdo rresht, Totalet në CHF',
+    kpi_total:        '🎯 Shpenzimet Totale',
+    kpi_paid:         '✅ Paguar',
+    kpi_open:         '⏳ Pa Paguar',
+    kpi_saved:        '💰 Totali i Kursimeve',
+    progress_title:   'Progresi i Pagesave',
+    progress_paid:    'paguar',
+    sec_kosten:       '💐 Shpenzimet e Dasmës',
+    sec_uebersicht:   '📊 Pasqyra e Përgjithshme',
+    sec_beitraege:    '💵 Kontribute Shtesë',
+    sec_gespart:      '🏦 Paratë e Kursyera',
+    sec_history:      '📋 Historia e Ndryshimeve',
+    th_posten:        'Zëri',
+    th_waehrung:      'Valuta',
+    th_kosten:        'Kostoja',
+    th_bezahlt:       'Paguar',
+    th_offen:         'Pa Paguar (CHF)',
+    th_quelle:        'Burimi',
+    th_betrag:        'Shuma',
+    th_inchf:         'Në CHF',
+    total:            'TOTALI',
+    total_gespart:    'TOTALI I KURSIMEVE',
+    lbl_noch_offen:   '💐 Ende pa paguar',
+    lbl_verfuegbar:   '🏦 Totali i disponueshëm',
+    lbl_uebrig:       '✨ Mbetje pas dasmës',
+    lbl_fehlend:      '⚠️ Mungon',
+    lbl_vater:        '👨‍👧 Kontributi i Babait Vali',
+    lbl_eltern:       '👨‍👧 Kontributi i Prindërve të Katias',
+    lbl_total_inkl:   '💰 Totali me Kontribute',
+    alles_chf:        'gjithçka në CHF',
+    btn_reset:        'Rivendos',
+    btn_add:          '+ Shto',
+    todo_placeholder: 'Detyrë e re…',
+    filter_all:       'Të gjitha',
+    filter_open:      'Hapura',
+    filter_done:      'Të kryera',
+    todo_von:         'nga',
+    todo_erledigt_von:'Kryer nga',
+    history_empty:    'Ende asnjë ndryshim — regjistrohet automatikisht.',
+    todo_empty:       'Asnjë detyrë këtu.',
+    bezahlt_label:    '✓ paguar',
+    aendern:          'ndrysho',
+    who_placeholder:  'Valdrin / Katia',
+    footer:           '💍 Dasma e Valdrin & Katia Dalipi · 23 Korrik 2026',
+    cats: ['Autoritetet','Të ftuarit','Dekorimi','Muzika','Ushqimi','Unazat','Veshja','Logjistika','Fotot','Financat','Të tjera'],
+  }
+};
+
+function t(key) { return T[currentLang][key] || T['de'][key] || key; }
+
+function setLang(lang, btn) {
+  currentLang = lang;
+  localStorage.setItem('hochzeit_lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyTranslations();
+  renderAll();
+}
+
+function applyTranslations() {
+  const L = T[currentLang];
+  // Header
+  document.querySelector('.header-date').textContent = L.headerDate;
+  // Tabs
+  const tabs = document.querySelectorAll('.tab');
+  tabs[0].textContent = L.tab_kosten;
+  tabs[1].textContent = L.tab_gespart;
+  tabs[2].textContent = L.tab_todos;
+  tabs[3].textContent = L.tab_history;
+  // Hints
+  const hints = document.querySelectorAll('.hint');
+  if (hints[0]) hints[0].textContent = L.hint_kosten;
+  if (hints[1]) hints[1].textContent = L.hint_gespart;
+  // KPI labels
+  const kpiLabels = document.querySelectorAll('.kpi-label');
+  if (kpiLabels[0]) kpiLabels[0].textContent = L.kpi_total;
+  if (kpiLabels[1]) kpiLabels[1].textContent = L.kpi_paid;
+  if (kpiLabels[2]) kpiLabels[2].textContent = L.kpi_open;
+  if (kpiLabels[3]) kpiLabels[3].textContent = L.kpi_saved;
+  // Progress
+  document.querySelector('.progress-title').textContent = L.progress_title;
+  document.querySelector('.ring-sub-label').textContent = L.progress_paid;
+  // Section titles
+  const secTitles = document.querySelectorAll('.section-title span');
+  if (secTitles[0]) secTitles[0].textContent = L.sec_kosten;
+  if (secTitles[1]) secTitles[1].textContent = L.sec_uebersicht;
+  if (secTitles[2]) secTitles[2].textContent = L.sec_beitraege;
+  if (secTitles[3]) secTitles[3].textContent = L.sec_gespart;
+  if (secTitles[4]) secTitles[4].textContent = L.sec_history;
+  // Table headers
+  const ths = document.querySelectorAll('#page-kosten thead th');
+  if (ths[0]) ths[0].textContent = L.th_posten;
+  if (ths[1]) ths[1].textContent = L.th_waehrung;
+  if (ths[2]) ths[2].textContent = L.th_kosten;
+  if (ths[3]) ths[3].textContent = L.th_bezahlt;
+  if (ths[4]) ths[4].textContent = L.th_offen;
+  const ths2 = document.querySelectorAll('#page-gespart thead th');
+  if (ths2[0]) ths2[0].textContent = L.th_quelle;
+  if (ths2[1]) ths2[1].textContent = L.th_waehrung;
+  if (ths2[2]) ths2[2].textContent = L.th_betrag;
+  if (ths2[3]) ths2[3].textContent = L.th_inchf;
+  // Summary labels
+  document.querySelector('#sum-offen').previousElementSibling.textContent = L.lbl_noch_offen;
+  document.querySelector('#sum-verfuegbar').previousElementSibling.textContent = L.lbl_verfuegbar;
+  // Finance labels
+  document.querySelectorAll('.fc-label')[0].textContent = L.lbl_vater;
+  document.querySelectorAll('.fc-label')[1].textContent = L.lbl_eltern;
+  document.querySelectorAll('.fc-label')[2].textContent = L.lbl_total_inkl;
+  // Buttons
+  document.querySelector('.reset-btn').textContent = L.btn_reset;
+  document.querySelector('.add-btn').textContent = L.btn_add;
+  document.getElementById('new-todo-text').placeholder = L.todo_placeholder;
+  // Filter buttons
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  if (filterBtns[0]) filterBtns[0].textContent = L.filter_all;
+  if (filterBtns[1]) filterBtns[1].textContent = L.filter_open;
+  if (filterBtns[2]) filterBtns[2].textContent = L.filter_done;
+  // Who input
+  document.getElementById('who-input').placeholder = L.who_placeholder;
+  // Footer
+  document.querySelector('footer').textContent = L.footer;
+  // Categories dropdown
+  const catSelect = document.getElementById('new-todo-cat');
+  const deCats = T.de.cats;
+  const alCats = T.al.cats;
+  Array.from(catSelect.options).forEach((opt, i) => {
+    opt.textContent = L.cats[i] || opt.textContent;
+    opt.value = deCats[i]; // always store DE value
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 // Load cached rate first, then refresh
 const cachedRate=localStorage.getItem('eur_rate');
@@ -913,6 +1114,13 @@ if(!cachedTs||Date.now()-cachedTs>3600000) refreshRate(); else document.getEleme
 fetchState();
 setInterval(fetchState, POLL_MS);
 setTimeout(renderProgress, 120);
+
+// Apply saved language
+if (currentLang === 'al') {
+  document.getElementById('lang-de').classList.remove('active');
+  document.getElementById('lang-al').classList.add('active');
+}
+applyTranslations();
 </script>
 </body>
 </html>
