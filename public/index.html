@@ -782,19 +782,19 @@ function renderTodos() {
   const list=document.getElementById('todo-list');
   const filtered=state.todos.filter(t=>todoFilter==='all'?true:todoFilter==='done'?t.done:!t.done);
   if (!filtered.length) { list.innerHTML='<div class="todo-empty">'+t('todo_empty')+'</div>'; return; }
-  list.innerHTML=filtered.map(t=>`
-    <div class="todo-item ${t.done?'done':''}">
-      <div class="todo-check" onclick="toggleTodo(${t.id})"><span class="todo-check-icon">✓</span></div>
+  list.innerHTML=filtered.map(todo=>`
+    <div class="todo-item ${todo.done?'done':''}">
+      <div class="todo-check" onclick="toggleTodo(${todo.id})"><span class="todo-check-icon">✓</span></div>
       <div class="todo-content">
-        <div class="todo-text">${escHtml(t.text)}</div>
+        <div class="todo-text">${escHtml(todo.text)}</div>
         <div class="todo-meta">
-          <span class="todo-cat cat-${t.category}">${t.category}</span>
-          ${t.done&&t.doneBy?`<span>${t('todo_erledigt_von')} ${escHtml(t.doneBy)}</span>`:''}
-          ${t.done&&t.doneAt?`<span>${fmtTime(t.doneAt)}</span>`:''}
-          ${!t.done&&t.addedBy?`<span>${t('todo_von')} ${escHtml(t.addedBy)}</span>`:''}
+          <span class="todo-cat cat-${todo.category}">${todo.category}</span>
+          ${todo.done&&todo.doneBy?`<span>${t('todo_erledigt_von')} ${escHtml(todo.doneBy)}</span>`:''}
+          ${todo.done&&todo.doneAt?`<span>${fmtTime(todo.doneAt)}</span>`:''}
+          ${!todo.done&&todo.addedBy?`<span>${t('todo_von')} ${escHtml(todo.addedBy)}</span>`:''}
         </div>
       </div>
-      <button class="todo-del" onclick="deleteTodo(${t.id})">×</button>
+      <button class="todo-del" onclick="deleteTodo(${todo.id})">×</button>
     </div>`).join('');
 }
 
@@ -809,19 +809,19 @@ function addTodo() {
 }
 
 function toggleTodo(id) {
-  const t=state.todos.find(t=>t.id===id); if(!t) return;
+  const todo=state.todos.find(td=>td.id===id); if(!todo) return;
   const who=document.getElementById('who-input').value.trim()||'Unbekannt';
-  t.done=!t.done;
-  if(t.done){t.doneBy=who;t.doneAt=Date.now();}else{delete t.doneBy;delete t.doneAt;}
-  pushState({who, action:`"${t.text}" ${t.done?'✅ erledigt':'↩️ wiedereröffnet'}`, type:'todo_toggle'});
+  todo.done=!todo.done;
+  if(todo.done){todo.doneBy=who;todo.doneAt=Date.now();}else{delete todo.doneBy;delete todo.doneAt;}
+  pushState({who, action:`"${todo.text}" ${todo.done?'✅ erledigt':'↩️ wiedereröffnet'}`, type:'todo_toggle'});
 }
 
 function deleteTodo(id) {
-  const t=state.todos.find(t=>t.id===id);
-  if(!confirm(`Löschen: "${t?.text}"?`)) return;
+  const todo=state.todos.find(td=>td.id===id);
+  if(!confirm(`Löschen: "${todo?.text}"?`)) return;
   const who=document.getElementById('who-input').value.trim()||'Unbekannt';
-  state.todos=state.todos.filter(t=>t.id!==id);
-  pushState({who, action:`Aufgabe gelöscht: "${t?.text}"`, type:'todo_del'});
+  state.todos=state.todos.filter(td=>td.id!==id);
+  pushState({who, action:`Aufgabe gelöscht: "${todo?.text}"`, type:'todo_del'});
 }
 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
