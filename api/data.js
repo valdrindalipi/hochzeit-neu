@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const token = process.env.KV_REST_API_TOKEN;
 
   if (!url || !token) {
-    return res.status(200).json({ error: 'No KV configured' });
+    return res.status(200).json(null);
   }
 
   const KEY = 'hochzeit_state';
@@ -20,11 +20,18 @@ export default async function handler(req, res) {
       });
       const raw = await r.json();
       if (!raw.result) return res.status(200).json(null);
-      // Unwrap: Upstash returns result as string, parse it
+
+      // Unwrap string
       let data = raw.result;
-      if (typeof data === 'string') data = JSON.parse(data);
-      // If still double-wrapped, parse again
-      if (typeof data === 'string') data = JSON.parse(data);
+      if (typeof data === 'string') { try { data = JSON.parse(data); } catch {} }
+      if (typeof data === 'string') { try { data = JSON.parse(data); } catch {} }
+
+      // If it's an array ["key", "{...}"], extract the second element
+      if (Array.isArray(data)) {
+        const val = data[1] ?? data[0];
+        data = typeof val === 'string' ? JSON.parse(val) : val;
+      }
+
       return res.status(200).json(data);
     } catch (e) {
       return res.status(500).json({ error: e.message });
@@ -33,19 +40,19 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      // Always store as plain object string (not double-stringified)
       const body = req.body;
       const toStore = typeof body === 'string' ? body : JSON.stringify(body);
+      // Use SET command correctly: /set/KEY with value in body
       const r = await fetch(`${url}/set/${KEY}`, {
         method: 'POST',
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify([KEY, toStore])
+        body: JSON.stringify(toStore)
       });
       const result = await r.json();
-      return res.status(200).json({ ok: true, result });
+      return res.status(200).json({ ok: true });
     } catch (e) {
       return res.status(500).json({ error: e.message });
     }
