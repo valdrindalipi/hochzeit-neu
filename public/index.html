@@ -238,6 +238,18 @@
   .history-meta { font-size:11px; color:#bbb; margin-top:2px; }
   .history-empty { text-align:center; padding:44px; color:#ccc; font-size:14px; }
 
+  /* COST FILTER */
+  .cost-filter { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .cost-filter-btn { padding:6px 14px; border-radius:100px; border:1.5px solid var(--cream); background:var(--white); font-size:12px; font-weight:600; cursor:pointer; color:#888; transition:all .15px; font-family:'Inter',sans-serif; }
+  .cost-filter-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .cost-filter-btn.active { background:var(--midnight); border-color:var(--midnight); color:var(--gold-light); }
+
+  /* DRAG HANDLE */
+  .drag-handle { cursor:grab; color:#ccc; font-size:13px; padding:0 4px; user-select:none; display:block; text-align:center; }
+  .drag-handle:active { cursor:grabbing; }
+  tr.dragging { opacity:0.35; }
+  tr.drag-over td { border-top:2px solid var(--gold) !important; }
+
   /* MISC */
   .hint { display:flex; align-items:center; gap:10px; background:var(--gold-pale); border:1px solid var(--gold-light); border-radius:10px; padding:10px 13px; font-size:13px; margin-bottom:22px; }
   .toast { position:fixed; bottom:22px; right:22px; background:var(--midnight); color:var(--gold-light); border:1px solid var(--gold); border-radius:10px; padding:10px 17px; font-size:13px; font-weight:500; box-shadow:var(--shadow-lg); opacity:0; transform:translateY(10px); transition:opacity .3s,transform .3s; pointer-events:none; z-index:999; }
@@ -311,9 +323,19 @@
       </div>
     </div>
     <div class="section-title"><span>💐 Hochzeitskosten</span><button class="reset-btn" onclick="resetData()">Zurücksetzen</button></div>
+
+    <!-- Filter Buttons -->
+    <div class="cost-filter">
+      <button class="cost-filter-btn active" onclick="setCostFilter('all',this)">Alle</button>
+      <button class="cost-filter-btn" onclick="setCostFilter('open',this)">⏳ Offen</button>
+      <button class="cost-filter-btn" onclick="setCostFilter('paid',this)">✓ Bezahlt</button>
+      <button class="cost-filter-btn" onclick="setCostFilter('partial',this)">◑ Teilbezahlt</button>
+    </div>
+
     <div class="table-wrap"><table>
       <thead><tr>
-        <th style="width:38%">Posten</th>
+        <th style="width:28px"></th>
+        <th style="width:34%">Posten</th>
         <th>Währung</th>
         <th>Kosten</th>
         <th>Bezahlt</th>
@@ -321,6 +343,7 @@
       </tr></thead>
       <tbody id="cost-tbody"></tbody>
       <tfoot><tr>
+        <td></td>
         <td colspan="2">TOTAL</td>
         <td id="foot-total">—</td>
         <td id="foot-paid">—</td>
@@ -408,7 +431,8 @@
     <div class="section-title"><span>🏦 Gespartes Geld</span></div>
     <div class="table-wrap green-head"><table>
       <thead><tr>
-        <th style="width:40%">Quelle</th>
+        <th style="width:28px"></th>
+        <th style="width:36%">Quelle</th>
         <th>Währung</th>
         <th>Betrag</th>
         <th>In CHF</th>
@@ -416,6 +440,7 @@
       </tr></thead>
       <tbody id="savings-tbody"></tbody>
       <tfoot><tr>
+        <td></td>
         <td colspan="2">TOTAL GESPART</td>
         <td></td>
         <td id="savings-total">—</td>
@@ -646,34 +671,56 @@ function renderAll() {
 }
 
 // ── COST TABLE ────────────────────────────────────────────────────────────────
+let costFilter = 'all';
+let dragSrcIdx = null;
+
+function setCostFilter(f, btn) {
+  costFilter = f;
+  document.querySelectorAll('.cost-filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCostTable();
+}
+
 function renderCostTable() {
   const tbody = document.getElementById('cost-tbody');
   tbody.innerHTML = '';
   let tK=0, tB=0, tKeur=0, tBeur=0, hasEur=false;
 
-  state.items.forEach((item,i) => {
+  // Always compute totals from ALL items (ignore filter for totals)
+  state.items.forEach(item => {
+    tK += toCHF(item.kosten, item.cur);
+    tB += toCHF(item.bezahlt, item.cur);
+    if (item.cur==='EUR') { tKeur += item.kosten; tBeur += item.bezahlt; hasEur=true; }
+  });
+
+  state.items.forEach((item, i) => {
     const kostenCHF  = toCHF(item.kosten, item.cur);
     const bezahltCHF = toCHF(item.bezahlt, item.cur);
     const offenCHF   = kostenCHF - bezahltCHF;
     const offenOrig  = item.kosten - item.bezahlt;
-    tK += kostenCHF; tB += bezahltCHF;
-    if (item.cur==='EUR') { tKeur += item.kosten; tBeur += item.bezahlt; hasEur=true; }
-    const dot = offenCHF<=0?'dot-paid':(item.bezahlt>0?'dot-partial':'dot-open');
-    const isEUR = item.cur==='EUR';
+    const isEUR      = item.cur==='EUR';
+    const isPaid     = offenCHF <= 0;
+    const isPartial  = !isPaid && item.bezahlt > 0;
 
-    // Offen cell: show original currency if EUR, plus CHF below
-    let offenHtml;
-    if (offenCHF <= 0) {
-      offenHtml = t('bezahlt_label');
-    } else if (isEUR) {
-      offenHtml = `EUR ${Math.round(offenOrig).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`;
-    } else {
-      offenHtml = fmtCHF(offenCHF);
-    }
+    // Apply filter
+    if (costFilter==='open'    && (isPaid || isPartial)) return;
+    if (costFilter==='paid'    && !isPaid) return;
+    if (costFilter==='partial' && !isPartial) return;
+
+    const dot = isPaid?'dot-paid':(isPartial?'dot-partial':'dot-open');
+    let offenHtml = isPaid ? t('bezahlt_label')
+      : isEUR ? `EUR ${Math.round(offenOrig).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`
+      : fmtCHF(offenCHF);
 
     const tr = document.createElement('tr');
+    tr.dataset.idx = i;
+    tr.draggable = true;
     tr.innerHTML = `
-      <td class="td-name"><span class="status-dot ${dot}"></span>${escHtml(item.name)}</td>
+      <td style="width:28px;padding:0 4px"><span class="drag-handle" title="Ziehen zum Sortieren">⠿</span></td>
+      <td class="td-name">
+        <span class="status-dot ${dot}"></span>
+        <span class="editable" onclick="startEditName(this,${i},'items')">${escHtml(item.name)}</span>
+      </td>
       <td style="text-align:center">
         <div class="cur-toggle">
           <button class="cur-btn ${!isEUR?'active':''}" onclick="setItemCur(${i},'CHF')">CHF</button>
@@ -686,17 +733,44 @@ function renderCostTable() {
       <td><span class="editable" onclick="startEdit(this,${i},'bezahlt','items')">${fmtAmt(item.bezahlt,item.cur)}</span>
           ${isEUR?`<div class="eur-note">≈ ${fmtCHF(bezahltCHF)}</div>`:''}
       </td>
-      <td class="td-offen ${offenCHF<=0?'zero':'pos'}">${offenHtml}</td>`;
+      <td class="td-offen ${isPaid?'zero':'pos'}">${offenHtml}</td>`;
+
+    // Drag & Drop events
+    tr.addEventListener('dragstart', e => {
+      dragSrcIdx = i;
+      setTimeout(() => tr.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    tr.addEventListener('dragend', () => {
+      tr.classList.remove('dragging');
+      document.querySelectorAll('tr.drag-over').forEach(r=>r.classList.remove('drag-over'));
+    });
+    tr.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('tr.drag-over').forEach(r=>r.classList.remove('drag-over'));
+      tr.classList.add('drag-over');
+    });
+    tr.addEventListener('dragleave', () => tr.classList.remove('drag-over'));
+    tr.addEventListener('drop', e => {
+      e.preventDefault();
+      tr.classList.remove('drag-over');
+      const targetIdx = parseInt(tr.dataset.idx);
+      if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+      const moved = state.items.splice(dragSrcIdx, 1)[0];
+      state.items.splice(targetIdx, 0, moved);
+      const who = document.getElementById('who-input').value.trim()||'Unbekannt';
+      pushState({ who, action:`"${moved.name}" verschoben`, type:'cost' });
+    });
+
     tbody.appendChild(tr);
   });
 
-  // Totals: CHF always, + EUR line if any EUR items
   const tOffen = tK - tB;
   const tOffenEur = tKeur - tBeur;
-
-  document.getElementById('foot-total').innerHTML = fmtCHF(tK) + (hasEur ? `<div class="eur-note" style="color:var(--gold-light)">EUR ${Math.round(tKeur).toLocaleString('de-CH')} davon EUR</div>` : '');
-  document.getElementById('foot-paid').innerHTML  = fmtCHF(tB) + (hasEur ? `<div class="eur-note" style="color:var(--gold-light)">EUR ${Math.round(tBeur).toLocaleString('de-CH')} davon EUR</div>` : '');
-  document.getElementById('foot-open').innerHTML  = fmtCHF(tOffen) + (hasEur ? `<div class="eur-note" style="color:var(--gold-light)">EUR ${Math.round(tOffenEur).toLocaleString('de-CH')} davon EUR</div>` : '');
+  document.getElementById('foot-total').innerHTML = fmtCHF(tK) + (hasEur?`<div class="eur-note" style="color:var(--gold-light)">EUR ${Math.round(tKeur).toLocaleString('de-CH')} davon EUR</div>`:'');
+  document.getElementById('foot-paid').innerHTML  = fmtCHF(tB) + (hasEur?`<div class="eur-note" style="color:var(--gold-light)">EUR ${Math.round(tBeur).toLocaleString('de-CH')} davon EUR</div>`:'');
+  document.getElementById('foot-open').innerHTML  = fmtCHF(tOffen) + (hasEur?`<div class="eur-note" style="color:var(--gold-light)">EUR ${Math.round(tOffenEur).toLocaleString('de-CH')} davon EUR</div>`:'');
 }
 
 function setItemCur(idx, cur) {
@@ -708,6 +782,8 @@ function setItemCur(idx, cur) {
 }
 
 // ── SAVINGS ───────────────────────────────────────────────────────────────────
+let dragSavingsIdx = null;
+
 function renderSavings() {
   const tbody = document.getElementById('savings-tbody');
   tbody.innerHTML = '';
@@ -718,7 +794,10 @@ function renderSavings() {
     total += chf;
     const isEUR = s.cur==='EUR';
     const tr = document.createElement('tr');
+    tr.dataset.idx = i;
+    tr.draggable = true;
     tr.innerHTML = `
+      <td style="width:28px;padding:0 4px"><span class="drag-handle" title="Ziehen zum Sortieren">⠿</span></td>
       <td class="td-name">
         <span class="editable" onclick="startEditName(this,${i},'savings')">${escHtml(s.name)}</span>
       </td>
@@ -733,6 +812,33 @@ function renderSavings() {
       </td>
       <td style="text-align:right;font-weight:600;color:var(--green)">${isEUR?fmtCHF(chf):'—'}</td>
       <td><button class="row-del" onclick="deleteSavingsRow(${i})" title="Löschen">×</button></td>`;
+
+    tr.addEventListener('dragstart', e => {
+      dragSavingsIdx = i;
+      setTimeout(()=>tr.classList.add('dragging'),0);
+      e.dataTransfer.effectAllowed='move';
+    });
+    tr.addEventListener('dragend', ()=>{
+      tr.classList.remove('dragging');
+      document.querySelectorAll('tr.drag-over').forEach(r=>r.classList.remove('drag-over'));
+    });
+    tr.addEventListener('dragover', e=>{
+      e.preventDefault();
+      document.querySelectorAll('tr.drag-over').forEach(r=>r.classList.remove('drag-over'));
+      tr.classList.add('drag-over');
+    });
+    tr.addEventListener('dragleave', ()=>tr.classList.remove('drag-over'));
+    tr.addEventListener('drop', e=>{
+      e.preventDefault();
+      tr.classList.remove('drag-over');
+      const targetIdx = parseInt(tr.dataset.idx);
+      if (dragSavingsIdx===null||dragSavingsIdx===targetIdx) return;
+      const moved = state.savings.splice(dragSavingsIdx,1)[0];
+      state.savings.splice(targetIdx,0,moved);
+      const who = document.getElementById('who-input').value.trim()||'Unbekannt';
+      pushState({who, action:`"${moved.name}" verschoben`, type:'savings'});
+    });
+
     tbody.appendChild(tr);
   });
 
