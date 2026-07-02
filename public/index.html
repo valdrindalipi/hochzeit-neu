@@ -144,7 +144,7 @@
   .sum-card.good .sc-label { color:rgba(168,213,181,.7); }
   .sum-card.good .sc-value { color:#A8D5B5; }
 
-  /* FINANCE */
+  /* FINANCE (legacy, keep for compatibility) */
   .finance-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:12px; margin-bottom:22px; }
   .fc { background:var(--white); border-radius:14px; padding:16px; box-shadow:var(--shadow); }
   .fc .fc-label { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:#999; margin-bottom:4px; }
@@ -154,6 +154,28 @@
   .fc.highlight .fc-label { color:rgba(232,213,160,.55); }
   .fc.highlight .fc-value { color:var(--gold-light); }
   .fc-edit { font-size:11px; color:#aaa; margin-top:5px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+
+  /* OVERVIEW BLOCKS */
+  .overview-block { background:var(--white); border-radius:16px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden; }
+  .overview-row-title { background:var(--midnight); color:var(--gold-light); font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; padding:10px 18px; }
+  .overview-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); }
+  .ov-card { padding:16px 18px; border-right:1px solid var(--cream); }
+  .ov-card:last-child { border-right:none; }
+  .ov-label { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#aaa; margin-bottom:6px; }
+  .ov-value { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--midnight); line-height:1.1; }
+  .ov-value.green { color:var(--green); }
+  .ov-value.orange { color:var(--orange); }
+  .ov-value.gold { color:var(--gold); }
+  .ov-value.good { color:#2E7D32; }
+  .ov-card.green-card { background:linear-gradient(135deg,#F1F8F2,#E8F5E9); }
+  .ov-card.orange-card { background:linear-gradient(135deg,#FFF8F5,#FFF0E8); }
+  .ov-card.gold-card { background:linear-gradient(135deg,var(--gold-pale),#FAF3DC); }
+  .ov-card.dark-card { background:linear-gradient(135deg,var(--midnight),#2C2C4E); }
+  .ov-card.dark-card .ov-label { color:rgba(232,213,160,.5); }
+  .ov-card.dark-card .ov-value { color:var(--gold-light); }
+  .ov-edit { font-size:11px; color:#aaa; margin-top:6px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+  .ov-sub { font-size:11px; color:#aaa; margin-top:3px; }
+  @media(max-width:600px) { .overview-row { grid-template-columns:1fr 1fr; } .ov-card { border-right:none; border-bottom:1px solid var(--cream); } }
 
   /* TODOS */
   .add-todo-form { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
@@ -301,44 +323,76 @@
       </tr></tfoot>
     </table></div>
 
-    <div class="section-title"><span>📊 Gesamtübersicht</span></div>
-    <div class="summary-grid">
-      <div class="sum-card"><div class="sc-label">💐 Noch offen</div><div class="sc-value orange" id="sum-offen">—</div></div>
-      <div class="sum-card"><div class="sc-label">🏦 Total verfügbar</div><div class="sc-value green" id="sum-verfuegbar">—</div></div>
-      <div class="sum-card good" id="sum-card">
-        <div class="sc-label" id="sum-rest-label">✨ Übrig nach Hochzeit</div>
-        <div class="sc-value" id="sum-rest">—</div>
+    <div class="section-title"><span>📊 Finanzübersicht</span></div>
+
+    <!-- ROW 1: Was kostet die Hochzeit -->
+    <div class="overview-block">
+      <div class="overview-row-title">💐 Hochzeitskosten</div>
+      <div class="overview-row">
+        <div class="ov-card">
+          <div class="ov-label">Gesamtkosten</div>
+          <div class="ov-value" id="sum-total">—</div>
+        </div>
+        <div class="ov-card green-card">
+          <div class="ov-label">Bereits bezahlt</div>
+          <div class="ov-value green" id="sum-bezahlt">—</div>
+        </div>
+        <div class="ov-card orange-card">
+          <div class="ov-label">Noch offen</div>
+          <div class="ov-value orange" id="sum-offen">—</div>
+        </div>
       </div>
     </div>
 
-    <div class="section-title"><span>💵 Zusätzliche Beiträge</span></div>
-    <div class="finance-grid">
-      <div class="fc">
-        <div class="fc-label">👨‍👧 Beitrag Vater Vali</div>
-        <div class="fc-value green" id="fin-vater-val">—</div>
-        <div class="fc-edit">
-          <span class="editable" id="fin-vater-edit" onclick="editFinance('vater',this)">ändern</span>
-          <div class="cur-toggle">
-            <button class="cur-btn active" id="fin-vater-chf" onclick="setFinanceCur('vater','CHF')">CHF</button>
-            <button class="cur-btn" id="fin-vater-eur" onclick="setFinanceCur('vater','EUR')">EUR</button>
+    <!-- ROW 2: Elternbeiträge -->
+    <div class="overview-block">
+      <div class="overview-row-title">👨‍👧 Elternbeiträge</div>
+      <div class="overview-row">
+        <div class="ov-card">
+          <div class="ov-label">Beitrag Vater Vali</div>
+          <div class="ov-value green" id="fin-vater-val">—</div>
+          <div class="ov-edit">
+            <span class="editable" id="fin-vater-edit" onclick="editFinance('vater',this)">ändern</span>
+            <div class="cur-toggle">
+              <button class="cur-btn active" id="fin-vater-chf" onclick="setFinanceCur('vater','CHF')">CHF</button>
+              <button class="cur-btn" id="fin-vater-eur" onclick="setFinanceCur('vater','EUR')">EUR</button>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="fc">
-        <div class="fc-label">👨‍👧 Beitrag Eltern Katia</div>
-        <div class="fc-value green" id="fin-elternkatia-val">—</div>
-        <div class="fc-edit">
-          <span class="editable" id="fin-elternkatia-edit" onclick="editFinance('elternKatia',this)">ändern</span>
-          <div class="cur-toggle">
-            <button class="cur-btn active" id="fin-elternkatia-chf" onclick="setFinanceCur('elternKatia','CHF')">CHF</button>
-            <button class="cur-btn" id="fin-elternkatia-eur" onclick="setFinanceCur('elternKatia','EUR')">EUR</button>
+        <div class="ov-card">
+          <div class="ov-label">Beitrag Eltern Katia</div>
+          <div class="ov-value green" id="fin-elternkatia-val">—</div>
+          <div class="ov-edit">
+            <span class="editable" id="fin-elternkatia-edit" onclick="editFinance('elternKatia',this)">ändern</span>
+            <div class="cur-toggle">
+              <button class="cur-btn active" id="fin-elternkatia-chf" onclick="setFinanceCur('elternKatia','CHF')">CHF</button>
+              <button class="cur-btn" id="fin-elternkatia-eur" onclick="setFinanceCur('elternKatia','EUR')">EUR</button>
+            </div>
           </div>
         </div>
+        <div class="ov-card green-card">
+          <div class="ov-label">Total Elternbeiträge</div>
+          <div class="ov-value green" id="fin-eltern-total">—</div>
+        </div>
       </div>
-      <div class="fc highlight">
-        <div class="fc-label">💰 Total inkl. Beiträge</div>
-        <div class="fc-value" id="fin-total-val">—</div>
-        <div style="font-size:10px;color:rgba(232,213,160,.5);margin-top:4px">alles in CHF</div>
+    </div>
+
+    <!-- ROW 3: Paar -->
+    <div class="overview-block">
+      <div class="overview-row-title">💑 Valdrin & Katia</div>
+      <div class="overview-row">
+        <div class="ov-card">
+          <div class="ov-label">Gespartes (Paar)</div>
+          <div class="ov-value gold" id="sum-gespart">—</div>
+        </div>
+        <div class="ov-card orange-card">
+          <div class="ov-label">Selbst zu bezahlen <span style="font-size:9px;opacity:.7">(nach Elternbeitrag)</span></div>
+          <div class="ov-value orange" id="sum-selbst">—</div>
+        </div>
+        <div class="ov-card" id="sum-rest-card">
+          <div class="ov-label" id="sum-rest-label">✨ Übrig nach Hochzeit</div>
+          <div class="ov-value" id="sum-rest">—</div>
+        </div>
       </div>
     </div>
   </div>
@@ -530,8 +584,11 @@ async function fetchState() {
   }
   // Then try to sync with server
   try {
-    const r = await fetch(API, { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) throw new Error();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const r = await fetch(API, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     let data = await r.json();
     // Fix: Upstash sometimes returns double-stringified JSON
     if (typeof data === 'string') { try { data = JSON.parse(data); } catch {} }
@@ -555,7 +612,10 @@ async function pushState(entry) {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
   setSyncStatus('syncing','Speichern…');
   try {
-    await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(state), signal: AbortSignal.timeout(5000) });
+    const ctrl = new AbortController();
+    const tmr = setTimeout(() => ctrl.abort(), 8000);
+    await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(state), signal: ctrl.signal });
+    clearTimeout(tmr);
     setSyncStatus('ok','Gespeichert ✓');
     showToast('💾 Gespeichert');
   } catch {
@@ -700,59 +760,72 @@ function renderProgress() {
 }
 
 // ── SUMMARY ───────────────────────────────────────────────────────────────────
-function renderSummary() {
-  const tK   = state.items.reduce((s,i)=>s+toCHF(i.kosten,i.cur),0);
-  const tB   = state.items.reduce((s,i)=>s+toCHF(i.bezahlt,i.cur),0);
-  const tS   = state.savings.reduce((s,i)=>s+toCHF(i.betrag,i.cur),0);
-  const offen = tK-tB;
-  const extra = toCHF(state.finance.vater||0, state.finance.vaterCur||'CHF') +
-                toCHF(state.finance.elternKatia||0, state.finance.elternKatiaCur||'CHF');
-  const verfuegbar = tS + extra;
-  const rest = verfuegbar - offen;
+function renderSummary() { renderOverview(); }
+function renderFinance() { renderOverview(); }
 
-  // EUR equivalents
-  const offenEur = offen / EUR_RATE;
-  const verfuegbarEur = verfuegbar / EUR_RATE;
+function renderOverview() {
+  // ── Kosten ──
+  const tK    = state.items.reduce((s,i)=>s+toCHF(i.kosten,i.cur),0);
+  const tB    = state.items.reduce((s,i)=>s+toCHF(i.bezahlt,i.cur),0);
+  const offen = tK - tB;
 
-  document.getElementById('sum-offen').innerHTML =
-    fmtCHF(offen) +
-    `<div style="font-size:13px;font-weight:500;color:var(--orange);opacity:.75;margin-top:3px">≈ EUR ${Math.round(offenEur).toLocaleString('de-CH')}</div>`;
-
-  document.getElementById('sum-verfuegbar').innerHTML =
-    fmtCHF(verfuegbar) +
-    `<div style="font-size:13px;font-weight:500;color:var(--green);opacity:.75;margin-top:3px">≈ EUR ${Math.round(verfuegbarEur).toLocaleString('de-CH')}</div>`;
-
-  const rc=document.getElementById('sum-card'), rv=document.getElementById('sum-rest'), rl=document.getElementById('sum-rest-label');
-  if (rest>=0) {
-    rv.innerHTML = fmtCHF(rest) + `<div style="font-size:13px;font-weight:500;opacity:.7;margin-top:3px">≈ EUR ${Math.round(rest/EUR_RATE).toLocaleString('de-CH')}</div>`;
-    rv.style.color='#A8D5B5'; rc.className='sum-card good'; rl.textContent='✨ Übrig nach Hochzeit';
-  } else {
-    rv.innerHTML = '−'+fmtCHF(Math.abs(rest)) + `<div style="font-size:13px;font-weight:500;opacity:.7;margin-top:3px">≈ EUR ${Math.round(Math.abs(rest)/EUR_RATE).toLocaleString('de-CH')}</div>`;
-    rv.style.color='#FFB3A0'; rc.className='sum-card dark'; rl.textContent='⚠️ Fehlend';
-  }
-}
-
-// ── FINANCE ───────────────────────────────────────────────────────────────────
-function renderFinance() {
-  const tS = state.savings.reduce((s,i)=>s+toCHF(i.betrag,i.cur),0);
-  const v  = state.finance.vater||0;
-  const vc = state.finance.vaterCur||'CHF';
-  const ek = state.finance.elternKatia||0;
-  const ec = state.finance.elternKatiaCur||'CHF';
+  // ── Elternbeiträge ──
+  const v   = state.finance.vater||0;
+  const vc  = state.finance.vaterCur||'CHF';
+  const ek  = state.finance.elternKatia||0;
+  const ec  = state.finance.elternKatiaCur||'CHF';
   const vCHF  = toCHF(v,vc);
   const ekCHF = toCHF(ek,ec);
+  const elternTotal = vCHF + ekCHF;
 
-  document.getElementById('fin-vater-val').textContent       = fmtAmt(v,vc)+(vc==='EUR'?` (≈ ${fmtCHF(vCHF)})`:'');
-  document.getElementById('fin-elternkatia-val').textContent = fmtAmt(ek,ec)+(ec==='EUR'?` (≈ ${fmtCHF(ekCHF)})`:'');
-  document.getElementById('fin-total-val').textContent       = fmtCHF(tS+vCHF+ekCHF);
-  document.getElementById('fin-vater-edit').textContent      = fmtAmt(v,vc)+' — ändern';
-  document.getElementById('fin-elternkatia-edit').textContent= fmtAmt(ek,ec)+' — ändern';
+  // ── Paar ──
+  const tS       = state.savings.reduce((s,i)=>s+toCHF(i.betrag,i.cur),0);
+  const selbst   = offen - elternTotal;   // was das Paar selbst noch zahlen muss
+  const uebrig   = tS - selbst;           // was vom Ersparten übrig bleibt
 
-  // toggle buttons
+  // ── EUR Anzeige helper ──
+  const eur = n => `<div class="ov-sub">≈ EUR ${Math.round(n/EUR_RATE).toLocaleString('de-CH')}</div>`;
+
+  // ROW 1 — Kosten
+  document.getElementById('sum-total').innerHTML   = fmtCHF(tK) + eur(tK);
+  document.getElementById('sum-bezahlt').innerHTML = fmtCHF(tB) + eur(tB);
+  document.getElementById('sum-offen').innerHTML   = fmtCHF(offen) + eur(offen);
+
+  // ROW 2 — Eltern
+  document.getElementById('fin-vater-val').innerHTML      = fmtAmt(v,vc)+(vc==='EUR'?` <span class="ov-sub">≈ ${fmtCHF(vCHF)}</span>`:'');
+  document.getElementById('fin-elternkatia-val').innerHTML= fmtAmt(ek,ec)+(ec==='EUR'?` <span class="ov-sub">≈ ${fmtCHF(ekCHF)}</span>`:'');
+  document.getElementById('fin-eltern-total').innerHTML   = fmtCHF(elternTotal) + eur(elternTotal);
+  document.getElementById('fin-vater-edit').textContent   = fmtAmt(v,vc)+' — ändern';
+  document.getElementById('fin-elternkatia-edit').textContent = fmtAmt(ek,ec)+' — ändern';
   ['chf','eur'].forEach(c=>{
     document.getElementById('fin-vater-'+c).className       = 'cur-btn'+(vc===c.toUpperCase()?' active':'');
     document.getElementById('fin-elternkatia-'+c).className = 'cur-btn'+(ec===c.toUpperCase()?' active':'');
   });
+
+  // ROW 3 — Paar
+  document.getElementById('sum-gespart').innerHTML = fmtCHF(tS) + eur(tS);
+
+  const selbstEl = document.getElementById('sum-selbst');
+  if (selbst <= 0) {
+    selbstEl.innerHTML = '<span style="color:var(--green)">✓ Eltern decken alles</span>';
+  } else {
+    selbstEl.innerHTML = fmtCHF(selbst) + eur(selbst);
+  }
+
+  const restEl   = document.getElementById('sum-rest');
+  const restCard = document.getElementById('sum-rest-card');
+  const restLbl  = document.getElementById('sum-rest-label');
+  if (uebrig >= 0) {
+    restEl.innerHTML = fmtCHF(uebrig) + eur(uebrig);
+    restEl.style.color = '#2E7D32';
+    restCard.className = 'ov-card green-card';
+    restLbl.textContent = '✨ Übrig nach Hochzeit';
+  } else {
+    restEl.innerHTML = '−'+fmtCHF(Math.abs(uebrig)) + eur(Math.abs(uebrig));
+    restEl.style.color = 'var(--orange)';
+    restCard.className = 'ov-card orange-card';
+    restLbl.textContent = '⚠️ Noch aufzubringen';
+  }
 }
 
 function setFinanceCur(key, cur) {
@@ -1074,8 +1147,7 @@ function applyTranslations() {
   if (ths2[2]) ths2[2].textContent = L.th_betrag;
   if (ths2[3]) ths2[3].textContent = L.th_inchf;
   // Summary labels
-  document.querySelector('#sum-offen').previousElementSibling.textContent = L.lbl_noch_offen;
-  document.querySelector('#sum-verfuegbar').previousElementSibling.textContent = L.lbl_verfuegbar;
+  // Overview labels (dynamic, set via renderOverview)
   // Finance labels
   document.querySelectorAll('.fc-label')[0].textContent = L.lbl_vater;
   document.querySelectorAll('.fc-label')[1].textContent = L.lbl_eltern;
