@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="sq">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💍 Hochzeit Valdrin & Katia · Weddingplanner Übersicht</title>
+<title>💍 Dasma Valdrin & Katia · Pllanifikuese</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,7 +15,6 @@
   }
   body { font-family: 'Inter', sans-serif; background: var(--ivory); color: var(--ink); min-height: 100vh; }
 
-  /* HEADER */
   header { background: var(--midnight); padding: 36px 24px 28px; text-align: center; position: relative; overflow: hidden; }
   header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,168,76,.18) 0%,transparent 70%); pointer-events:none; }
   .header-ornament { font-size:20px; letter-spacing:10px; color:var(--gold); opacity:.6; margin-bottom:10px; display:block; }
@@ -25,29 +24,28 @@
   .header-sub { margin-top:6px; font-size:12px; color:rgba(232,213,160,.5); }
   .header-divider { margin:14px auto 0; width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
 
-  /* SYNC BAR */
-  .sync-bar { background:var(--midnight); padding:6px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,.05); }
-  .sync-dot { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:6px; }
+  .sync-bar { background:var(--midnight); padding:7px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,.05); flex-wrap:wrap; gap:6px; }
+  .sync-left { display:flex; align-items:center; gap:6px; }
+  .sync-dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
   .sync-dot.ok { background:#4CAF50; }
   .sync-dot.syncing { background:var(--gold); animation:pulse 1s infinite; }
   .sync-dot.error { background:var(--red); }
+  .sync-dot.translating { background:#9C27B0; animation:pulse 1s infinite; }
   @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
   .sync-text { color:rgba(255,255,255,.4); font-size:11px; }
   .readonly-badge { background:rgba(201,168,76,.15); border:1px solid rgba(201,168,76,.3); border-radius:6px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--gold); letter-spacing:.5px; }
 
-  /* CONTAINER */
-  .container { max-width: 860px; margin: 0 auto; padding: 28px 16px 64px; }
+  .container { max-width:860px; margin:0 auto; padding:28px 16px 64px; }
 
-  /* KPI */
   .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
   .kpi { background:var(--white); border-radius:14px; padding:16px; box-shadow:var(--shadow); border-top:3px solid var(--gold); }
   .kpi-label { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:6px; }
   .kpi-value { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--midnight); }
   .kpi-value.green { color:var(--green); }
   .kpi-value.orange { color:var(--orange); }
+  .kpi-value.gold { color:var(--gold); }
   .kpi-sub { font-size:10px; color:#aaa; margin-top:3px; }
 
-  /* PROGRESS */
   .progress-section { background:var(--white); border-radius:16px; box-shadow:var(--shadow); padding:20px 22px; margin-bottom:22px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
   .ring-wrap { flex-shrink:0; position:relative; width:80px; height:80px; }
   .ring-wrap svg { transform:rotate(-90deg); }
@@ -63,16 +61,13 @@
   .progress-detail { font-size:12px; color:#777; }
   .progress-detail strong { color:var(--ink); }
 
-  /* FILTER */
   .filter-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-  .section-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:600; color:var(--midnight); display:flex; align-items:center; gap:10px; }
-  .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--gold-light),transparent); }
+  .section-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:600; color:var(--midnight); }
   .filter-btn { padding:5px 13px; border-radius:100px; border:1.5px solid var(--cream); background:var(--white); font-size:12px; font-weight:600; cursor:pointer; color:#888; transition:all .15s; font-family:'Inter',sans-serif; }
   .filter-btn:hover { border-color:var(--gold); color:var(--gold); }
   .filter-btn.active { background:var(--midnight); border-color:var(--midnight); color:var(--gold-light); }
 
-  /* TABLE */
-  .table-wrap { background:var(--white); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; margin-bottom:22px; }
+  .table-wrap { background:var(--white); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; margin-bottom:16px; }
   table { width:100%; border-collapse:collapse; }
   thead tr { background:var(--midnight); }
   thead th { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold-light); padding:11px 14px; text-align:left; }
@@ -83,26 +78,26 @@
   td { padding:12px 14px; font-size:14px; vertical-align:middle; }
   td:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
   .td-name { font-weight:500; }
+  .td-name small { display:block; font-size:11px; color:#bbb; font-weight:400; font-style:italic; margin-top:2px; }
   .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; }
   .dot-paid { background:var(--green); }
   .dot-partial { background:var(--gold); }
   .dot-open { background:#ddd; }
-  .td-offen.zero { color:var(--green); font-weight:600; }
-  .td-offen.pos { color:var(--orange); font-weight:600; }
   .cur-badge { display:inline-block; font-size:9px; font-weight:700; background:var(--midnight); color:var(--gold-light); border-radius:4px; padding:1px 5px; margin-left:5px; vertical-align:middle; }
   .eur-note { font-size:10px; color:#aaa; font-style:italic; }
+  .td-offen.zero { color:var(--green); font-weight:600; }
+  .td-offen.pos { color:var(--orange); font-weight:600; }
   tfoot tr { background:var(--midnight); }
   tfoot td { color:var(--gold-light); font-weight:700; font-size:14px; padding:12px 14px; font-family:'Playfair Display',serif; }
   tfoot td:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
 
-  /* STATUS LEGEND */
   .legend { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px; font-size:12px; color:#888; }
   .legend-item { display:flex; align-items:center; gap:6px; }
 
-  /* LAST UPDATED */
-  .last-updated { text-align:center; font-size:11px; color:#bbb; margin-top:8px; }
+  .translate-note { text-align:center; font-size:11px; color:#bbb; margin-top:6px; }
+  .translate-note a { color:var(--gold); text-decoration:none; }
 
-  footer { text-align:center; padding:20px; font-size:11px; color:#bbb; border-top:1px solid var(--cream); margin-top:32px; }
+  footer { text-align:center; padding:20px; font-size:11px; color:#bbb; border-top:1px solid var(--cream); margin-top:20px; }
 
   @media(max-width:600px) { .kpi-grid{grid-template-columns:1fr 1fr} }
 </style>
@@ -112,30 +107,28 @@
 <header>
   <span class="header-ornament">✦ &nbsp; ✦ &nbsp; ✦</span>
   <h1>Valdrin &amp; <em>Katia</em> Dalipi</h1>
-  <p class="header-date">23. Juli 2026</p>
-  <p class="header-sub">Weddingplanner Kostenübersicht · Nur Lesezugriff</p>
+  <p class="header-date">23 Korrik 2026</p>
+  <p class="header-sub">Pasqyra e Shpenzimeve · Vetëm Lexim</p>
   <div class="header-divider"></div>
 </header>
 
 <div class="sync-bar">
-  <div>
+  <div class="sync-left">
     <span class="sync-dot syncing" id="sync-dot"></span>
-    <span class="sync-text" id="sync-text">Lade Daten…</span>
+    <span class="sync-text" id="sync-text">Duke ngarkuar të dhënat…</span>
   </div>
-  <span class="readonly-badge">👁 NUR LESEN</span>
+  <span class="readonly-badge">👁 VETËM LEXIM</span>
 </div>
 
 <div class="container">
 
-  <!-- KPIs -->
   <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">🎯 Gesamtkosten</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">CHF</div></div>
-    <div class="kpi"><div class="kpi-label">✅ Bezahlt</div><div class="kpi-value green" id="kpi-paid">—</div><div class="kpi-sub">CHF</div></div>
-    <div class="kpi"><div class="kpi-label">⏳ Noch offen</div><div class="kpi-value orange" id="kpi-open">—</div><div class="kpi-sub">CHF</div></div>
-    <div class="kpi"><div class="kpi-label">📊 Fortschritt</div><div class="kpi-value gold" id="kpi-pct">—</div><div class="kpi-sub">% bezahlt</div></div>
+    <div class="kpi"><div class="kpi-label">🎯 Shpenzimet Totale</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">CHF</div></div>
+    <div class="kpi"><div class="kpi-label">✅ Paguar</div><div class="kpi-value green" id="kpi-paid">—</div><div class="kpi-sub">CHF</div></div>
+    <div class="kpi"><div class="kpi-label">⏳ Ende Pa Paguar</div><div class="kpi-value orange" id="kpi-open">—</div><div class="kpi-sub">CHF</div></div>
+    <div class="kpi"><div class="kpi-label">📊 Progresi</div><div class="kpi-value gold" id="kpi-pct">—</div><div class="kpi-sub">% paguar</div></div>
   </div>
 
-  <!-- PROGRESS -->
   <div class="progress-section">
     <div class="ring-wrap">
       <svg viewBox="0 0 100 100" width="80" height="80">
@@ -146,42 +139,41 @@
         <circle class="ring-bg" cx="50" cy="50" r="42"/>
         <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
       </svg>
-      <div class="ring-label"><div class="ring-pct" id="ring-pct">0%</div><div class="ring-sub-label">bezahlt</div></div>
+      <div class="ring-label"><div class="ring-pct" id="ring-pct">0%</div><div class="ring-sub-label">paguar</div></div>
     </div>
     <div class="progress-info">
-      <div class="progress-title">Zahlungsfortschritt</div>
+      <div class="progress-title">Progresi i Pagesave</div>
       <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
       <div class="progress-detail" id="progress-detail">—</div>
     </div>
   </div>
 
-  <!-- FILTER + TABLE -->
   <div class="filter-row">
-    <div class="section-title" style="flex:none">💐 Hochzeitskosten</div>
+    <div class="section-title">💐 Shpenzimet e Dasmës</div>
     <div style="flex:1"></div>
-    <button class="filter-btn active" onclick="setFilter('all',this)">Alle</button>
-    <button class="filter-btn" onclick="setFilter('open',this)">⏳ Offen</button>
-    <button class="filter-btn" onclick="setFilter('paid',this)">✓ Bezahlt</button>
-    <button class="filter-btn" onclick="setFilter('partial',this)">◑ Teilbezahlt</button>
+    <button class="filter-btn active" onclick="setFilter('all',this)">Të gjitha</button>
+    <button class="filter-btn" onclick="setFilter('open',this)">⏳ Pa paguar</button>
+    <button class="filter-btn" onclick="setFilter('paid',this)">✓ Paguar</button>
+    <button class="filter-btn" onclick="setFilter('partial',this)">◑ Pjesërisht</button>
   </div>
 
   <div class="legend">
-    <div class="legend-item"><span class="status-dot dot-paid"></span> Vollständig bezahlt</div>
-    <div class="legend-item"><span class="status-dot dot-partial"></span> Teilweise bezahlt</div>
-    <div class="legend-item"><span class="status-dot dot-open"></span> Noch offen</div>
+    <div class="legend-item"><span class="status-dot dot-paid"></span> Paguar plotësisht</div>
+    <div class="legend-item"><span class="status-dot dot-partial"></span> Paguar pjesërisht</div>
+    <div class="legend-item"><span class="status-dot dot-open"></span> Ende pa paguar</div>
   </div>
 
   <div class="table-wrap">
     <table>
       <thead><tr>
-        <th style="width:45%">Posten</th>
-        <th>Kosten</th>
-        <th>Bezahlt</th>
-        <th>Offen</th>
+        <th style="width:45%">Zëri</th>
+        <th>Kostoja</th>
+        <th>Paguar</th>
+        <th>Pa Paguar</th>
       </tr></thead>
       <tbody id="cost-tbody"></tbody>
       <tfoot><tr>
-        <td>TOTAL</td>
+        <td>TOTALI</td>
         <td id="foot-total">—</td>
         <td id="foot-paid">—</td>
         <td id="foot-open">—</td>
@@ -189,29 +181,30 @@
     </table>
   </div>
 
-  <div class="last-updated" id="last-updated"></div>
+  <div class="translate-note" id="translate-note"></div>
 
 </div>
 
-<footer>💍 Hochzeit Valdrin &amp; Katia Dalipi · 23. Juli 2026 · Weddingplanner Ansicht</footer>
+<footer>💍 Dasma e Valdrin &amp; Katia Dalipi · 23 Korrik 2026 · Pamja e Pllanifikueses</footer>
 
 <script>
 const API = '/api/data';
 let EUR_RATE = 0.955;
 let state = null;
 let activeFilter = 'all';
+let translationCache = {};
 
 // ── FORMAT ────────────────────────────────────────────────────────────────────
 const fmtCHF = n => 'CHF ' + Math.round(n).toLocaleString('de-CH');
 const fmtAmt = (n, cur) => cur + ' ' + Math.round(n).toLocaleString('de-CH');
 const toCHF  = (n, cur) => cur==='EUR' ? n*EUR_RATE : n;
 
-function setSyncStatus(s, txt) {
-  document.getElementById('sync-dot').className = 'sync-dot ' + s;
+function setSyncStatus(cls, txt) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + cls;
   document.getElementById('sync-text').textContent = txt;
 }
 
-// ── FETCH RATE ────────────────────────────────────────────────────────────────
+// ── EUR RATE ──────────────────────────────────────────────────────────────────
 async function loadRate() {
   try {
     const cached = localStorage.getItem('eur_rate');
@@ -225,9 +218,41 @@ async function loadRate() {
   } catch {}
 }
 
+// ── TRANSLATE ─────────────────────────────────────────────────────────────────
+// Use MyMemory free API (DE → SQ Albanian), with localStorage cache
+async function translateText(text) {
+  if (!text || text.trim()==='') return text;
+  const cacheKey = 'tr_' + text;
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=de|sq`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    const d = await r.json();
+    if (d.responseStatus === 200 && d.responseData?.translatedText) {
+      const translated = d.responseData.translatedText;
+      localStorage.setItem(cacheKey, translated);
+      return translated;
+    }
+  } catch {}
+  return text; // fallback: original
+}
+
+async function translateAllItems(items) {
+  setSyncStatus('translating', 'Duke përkthyer në shqip…');
+  const results = [];
+  for (const item of items) {
+    const alName = await translateText(item.name);
+    results.push({ ...item, nameAL: alName });
+  }
+  return results;
+}
+
 // ── LOAD DATA ─────────────────────────────────────────────────────────────────
 async function loadData() {
   try {
+    setSyncStatus('syncing', 'Duke ngarkuar të dhënat…');
     const r = await fetch(API, { signal: AbortSignal.timeout(6000) });
     if (!r.ok) throw new Error();
     let data = await r.json();
@@ -235,13 +260,18 @@ async function loadData() {
     if (typeof data === 'string') data = JSON.parse(data);
     if (Array.isArray(data)) { const v=data[1]??data[0]; data=typeof v==='string'?JSON.parse(v):v; }
     if (!data || !data.items) throw new Error();
-    state = data;
-    state.items.forEach(i=>{ if(!i.cur) i.cur='CHF'; });
-    setSyncStatus('ok', 'Aktuell · wird alle 30 Sek. aktualisiert');
-    document.getElementById('last-updated').textContent = 'Stand: ' + new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+    data.items.forEach(i=>{ if(!i.cur) i.cur='CHF'; });
+
+    // Translate item names
+    const translatedItems = await translateAllItems(data.items);
+    state = { ...data, items: translatedItems };
+
+    setSyncStatus('ok', 'Të dhënat janë të përditësuara · rifresohet çdo 30 sek.');
+    document.getElementById('translate-note').innerHTML =
+      '🌐 Emrat e zërave janë përkthyer automatikisht nga gjermanishtja në shqip';
     render();
-  } catch {
-    setSyncStatus('error', 'Verbindungsfehler — versuche erneut…');
+  } catch(e) {
+    setSyncStatus('error', 'Gabim lidhjeje — duke u riprovuar…');
   }
 }
 
@@ -256,7 +286,6 @@ function setFilter(f, btn) {
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render() {
   if (!state) return;
-
   const items = state.items;
   let tK=0, tB=0;
   items.forEach(item => {
@@ -271,12 +300,12 @@ function render() {
   document.getElementById('kpi-open').textContent  = Math.round(tK-tB).toLocaleString('de-CH');
   document.getElementById('kpi-pct').textContent   = pct + '%';
 
-  // Progress ring
+  // Progress
   document.getElementById('ring-fill').style.strokeDashoffset = 263.9-(pct/100)*263.9;
   document.getElementById('ring-pct').textContent = pct + '%';
   document.getElementById('progress-bar').style.width = pct + '%';
   document.getElementById('progress-detail').innerHTML =
-    `<strong>${fmtCHF(tB)}</strong> von <strong>${fmtCHF(tK)}</strong> bezahlt`;
+    `<strong>${fmtCHF(tB)}</strong> nga <strong>${fmtCHF(tK)}</strong> paguar`;
 
   // Table
   const tbody = document.getElementById('cost-tbody');
@@ -295,14 +324,21 @@ function render() {
     if (activeFilter==='partial' && !isPartial) return;
 
     const dot = isPaid?'dot-paid':(isPartial?'dot-partial':'dot-open');
-    const offenHtml = isPaid ? '<span style="color:var(--green)">✓ bezahlt</span>'
-      : isEUR ? `EUR ${Math.round(item.kosten-item.bezahlt).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`
-      : fmtCHF(offenCHF);
+    const offenHtml = isPaid
+      ? '<span style="color:var(--green)">✓ paguar</span>'
+      : isEUR
+        ? `EUR ${Math.round(item.kosten-item.bezahlt).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`
+        : fmtCHF(offenCHF);
+
+    // Show Albanian name + German original below
+    const displayName = item.nameAL && item.nameAL !== item.name
+      ? `${item.nameAL}<small>${item.name}</small>`
+      : item.name;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="td-name">
-        <span class="status-dot ${dot}"></span>${item.name}
+        <span class="status-dot ${dot}"></span>${displayName}
         ${isEUR?'<span class="cur-badge">EUR</span>':''}
       </td>
       <td>${fmtAmt(item.kosten,item.cur)}${isEUR?`<div class="eur-note">≈ ${fmtCHF(kostenCHF)}</div>`:''}</td>
@@ -318,10 +354,7 @@ function render() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadRate().then(loadData);
-setInterval(loadData, 30000); // refresh every 30s
-setTimeout(()=>{
-  document.getElementById('ring-fill').style.transition='stroke-dashoffset 1s';
-},100);
+setInterval(loadData, 30000);
 </script>
 </body>
 </html>
