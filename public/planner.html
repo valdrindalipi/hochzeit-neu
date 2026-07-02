@@ -347,9 +347,9 @@ function render() {
     tbody.appendChild(tr);
   });
 
-  document.getElementById('foot-total').textContent = fmtCHF(tK);
-  document.getElementById('foot-paid').textContent  = fmtCHF(tB);
-  document.getElementById('foot-open').textContent  = fmtCHF(tK-tB);
+  document.getElementById('foot-total').innerHTML = fmtCHF(tK) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round(tK/EUR_RATE).toLocaleString('de-CH')}</div>`;
+  document.getElementById('foot-paid').innerHTML  = fmtCHF(tB) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round(tB/EUR_RATE).toLocaleString('de-CH')}</div>`;
+  document.getElementById('foot-open').innerHTML  = fmtCHF(tK-tB) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round((tK-tB)/EUR_RATE).toLocaleString('de-CH')}</div>`;
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
