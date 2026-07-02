@@ -257,7 +257,69 @@
   footer { text-align:center; padding:18px; font-size:11px; color:#bbb; border-top:1px solid var(--cream); }
   .reset-btn { background:none; border:1.5px solid #ddd; border-radius:7px; padding:5px 11px; font-size:11px; font-family:'Inter',sans-serif; color:#aaa; cursor:pointer; transition:all .2s; }
   .reset-btn:hover { border-color:var(--red); color:var(--red); }
-  @media(max-width:600px) { .kpi-grid{grid-template-columns:1fr 1fr} .tabs{gap:0} .tab{padding:12px 10px;font-size:11px} }
+  @media(max-width:600px) {
+    /* KPI grid: 2 columns on mobile */
+    .kpi-grid { grid-template-columns:1fr 1fr; }
+
+    /* Tabs: smaller, no gap */
+    .tabs { gap:0; overflow-x:auto; justify-content:flex-start; }
+    .tab { padding:11px 10px; font-size:11px; flex-shrink:0; }
+
+    /* Sync bar: stack vertically */
+    .sync-bar { flex-direction:column; align-items:flex-start; gap:6px; padding:8px 12px; }
+    .sync-right { width:100%; justify-content:space-between; }
+    .who-input { width:110px; }
+
+    /* Progress section: stack */
+    .progress-section { flex-direction:column; align-items:flex-start; gap:14px; }
+    .ring-wrap { align-self:center; }
+
+    /* Overview: 1 column on very small, 2 on medium */
+    .overview-row { grid-template-columns:1fr 1fr; }
+    .ov-card { border-right:none; border-bottom:1px solid var(--cream); }
+    .ov-card:last-child { border-bottom:none; }
+    .ov-value { font-size:17px; }
+
+    /* Cost table: hide Währung col, compact */
+    .cost-table-currency { display:none; }
+    thead th { padding:9px 8px; font-size:9px; letter-spacing:1px; }
+    td { padding:9px 8px; font-size:13px; }
+    tfoot td { padding:10px 8px; font-size:13px; }
+    .drag-handle { display:none; }
+    .eur-note { font-size:9px; }
+
+    /* Savings table: hide Währung col on mobile */
+    .savings-table-currency { display:none; }
+
+    /* Finance grid: 1 col */
+    .finance-grid { grid-template-columns:1fr; }
+
+    /* Section title smaller */
+    .section-title { font-size:16px; }
+
+    /* Cost filter: scrollable */
+    .cost-filter { flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; }
+    .cost-filter-btn { flex-shrink:0; }
+
+    /* Todo form: stack */
+    .add-todo-form { flex-direction:column; }
+    .todo-input { min-width:unset; }
+
+    /* History items */
+    .history-item { padding:10px 12px; }
+
+    /* Container padding */
+    .container { padding:18px 10px 64px; }
+
+    /* Table wrap: allow horizontal scroll as fallback */
+    .table-wrap { overflow-x:auto; }
+  }
+
+  @media(max-width:380px) {
+    .overview-row { grid-template-columns:1fr; }
+    .kpi-value { font-size:20px; }
+    h1 { font-size:22px; }
+  }
 </style>
 </head>
 <body>
@@ -336,7 +398,7 @@
       <thead><tr>
         <th style="width:28px"></th>
         <th style="width:34%">Posten</th>
-        <th>Währung</th>
+        <th class="cost-table-currency">Währung</th>
         <th>Kosten</th>
         <th>Bezahlt</th>
         <th>Offen (CHF)</th>
@@ -433,7 +495,7 @@
       <thead><tr>
         <th style="width:28px"></th>
         <th style="width:36%">Quelle</th>
-        <th>Währung</th>
+        <th class="savings-table-currency">Währung</th>
         <th>Betrag</th>
         <th>In CHF</th>
         <th style="width:36px"></th>
@@ -720,8 +782,9 @@ function renderCostTable() {
       <td class="td-name">
         <span class="status-dot ${dot}"></span>
         <span class="editable" onclick="startEditName(this,${i},'items')">${escHtml(item.name)}</span>
+        ${isEUR?'<span style="font-size:9px;font-weight:700;background:var(--midnight);color:var(--gold-light);border-radius:4px;padding:1px 4px;margin-left:4px;vertical-align:middle">EUR</span>':''}
       </td>
-      <td style="text-align:center">
+      <td class="cost-table-currency" style="text-align:center">
         <div class="cur-toggle">
           <button class="cur-btn ${!isEUR?'active':''}" onclick="setItemCur(${i},'CHF')">CHF</button>
           <button class="cur-btn ${isEUR?'active':''}"  onclick="setItemCur(${i},'EUR')">EUR</button>
@@ -800,8 +863,9 @@ function renderSavings() {
       <td style="width:28px;padding:0 4px"><span class="drag-handle" title="Ziehen zum Sortieren">⠿</span></td>
       <td class="td-name">
         <span class="editable" onclick="startEditName(this,${i},'savings')">${escHtml(s.name)}</span>
+        ${isEUR?'<span style="font-size:9px;font-weight:700;background:#1B3A2D;color:#A8D5B5;border-radius:4px;padding:1px 4px;margin-left:4px;vertical-align:middle">EUR</span>':''}
       </td>
-      <td style="text-align:center">
+      <td class="savings-table-currency" style="text-align:center">
         <div class="cur-toggle">
           <button class="cur-btn ${!isEUR?'active':''}" onclick="setSavingsCur(${i},'CHF')">CHF</button>
           <button class="cur-btn ${isEUR?'active':''}"  onclick="setSavingsCur(${i},'EUR')">EUR</button>
