@@ -139,9 +139,9 @@
 <div class="container">
 
   <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-label">🎯 Shpenzimet Totale</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">CHF</div></div>
-    <div class="kpi"><div class="kpi-label">✅ Paguar</div><div class="kpi-value green" id="kpi-paid">—</div><div class="kpi-sub">CHF</div></div>
-    <div class="kpi"><div class="kpi-label">⏳ Ende Pa Paguar</div><div class="kpi-value orange" id="kpi-open">—</div><div class="kpi-sub">CHF</div></div>
+    <div class="kpi"><div class="kpi-label">🎯 Shpenzimet Totale</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">EUR</div></div>
+    <div class="kpi"><div class="kpi-label">✅ Paguar</div><div class="kpi-value green" id="kpi-paid">—</div><div class="kpi-sub">EUR</div></div>
+    <div class="kpi"><div class="kpi-label">⏳ Ende Pa Paguar</div><div class="kpi-value orange" id="kpi-open">—</div><div class="kpi-sub">EUR</div></div>
     <div class="kpi"><div class="kpi-label">📊 Progresi</div><div class="kpi-value gold" id="kpi-pct">—</div><div class="kpi-sub">% paguar</div></div>
   </div>
 
@@ -183,9 +183,9 @@
     <table>
       <thead><tr>
         <th style="width:45%">Zëri</th>
-        <th>Kostoja</th>
-        <th>Paguar</th>
-        <th>Pa Paguar</th>
+        <th>Kostoja (EUR)</th>
+        <th>Paguar (EUR)</th>
+        <th>Pa Paguar (EUR)</th>
       </tr></thead>
       <tbody id="cost-tbody"></tbody>
       <tfoot><tr>
@@ -211,9 +211,11 @@ let activeFilter = 'all';
 let translationCache = {};
 
 // ── FORMAT ────────────────────────────────────────────────────────────────────
-const fmtCHF = n => 'CHF ' + Math.round(n).toLocaleString('de-CH');
-const fmtAmt = (n, cur) => cur + ' ' + Math.round(n).toLocaleString('de-CH');
-const toCHF  = (n, cur) => cur==='EUR' ? n*EUR_RATE : n;
+const fmtEUR  = n => 'EUR ' + Math.round(n).toLocaleString('de-CH');
+const fmtCHF  = n => 'CHF ' + Math.round(n).toLocaleString('de-CH');
+const fmtAmt  = (n, cur) => cur + ' ' + Math.round(n).toLocaleString('de-CH');
+const toCHF   = (n, cur) => cur==='EUR' ? n*EUR_RATE : n;
+const toEUR   = (n, cur) => cur==='CHF' ? n/EUR_RATE : n;
 
 function setSyncStatus(cls, txt) {
   document.getElementById('sync-dot').className = 'sync-dot ' + cls;
@@ -310,10 +312,10 @@ function render() {
   });
   const pct = tK > 0 ? Math.round(tB/tK*100) : 0;
 
-  // KPIs
-  document.getElementById('kpi-total').textContent = Math.round(tK).toLocaleString('de-CH');
-  document.getElementById('kpi-paid').textContent  = Math.round(tB).toLocaleString('de-CH');
-  document.getElementById('kpi-open').textContent  = Math.round(tK-tB).toLocaleString('de-CH');
+  // KPIs — show in EUR, CHF as note
+  document.getElementById('kpi-total').textContent = Math.round(tK/EUR_RATE).toLocaleString('de-CH');
+  document.getElementById('kpi-paid').textContent  = Math.round(tB/EUR_RATE).toLocaleString('de-CH');
+  document.getElementById('kpi-open').textContent  = Math.round((tK-tB)/EUR_RATE).toLocaleString('de-CH');
   document.getElementById('kpi-pct').textContent   = pct + '%';
 
   // Progress
@@ -321,7 +323,7 @@ function render() {
   document.getElementById('ring-pct').textContent = pct + '%';
   document.getElementById('progress-bar').style.width = pct + '%';
   document.getElementById('progress-detail').innerHTML =
-    `<strong>${fmtCHF(tB)}</strong> nga <strong>${fmtCHF(tK)}</strong> paguar`;
+    `<strong>${fmtEUR(tB/EUR_RATE)}</strong> nga <strong>${fmtEUR(tK/EUR_RATE)}</strong> paguar`;
 
   // Table
   const tbody = document.getElementById('cost-tbody');
@@ -340,32 +342,31 @@ function render() {
     if (activeFilter==='partial' && !isPartial) return;
 
     const dot = isPaid?'dot-paid':(isPartial?'dot-partial':'dot-open');
+
+    // Always show in EUR, CHF as small note
+    const kostenEUR  = toEUR(item.kosten,  item.cur);
+    const bezahltEUR = toEUR(item.bezahlt, item.cur);
+    const offenEUR   = kostenEUR - bezahltEUR;
+
     const offenHtml = isPaid
       ? '<span style="color:var(--green)">✓ paguar</span>'
-      : isEUR
-        ? `EUR ${Math.round(item.kosten-item.bezahlt).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`
-        : fmtCHF(offenCHF);
-
-    // Show Albanian name — editable, with German original below
-    const alName = item.nameAL || item.name;
-    const cacheKey = 'tr_' + item.name;
+      : `${fmtEUR(offenEUR)}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="td-name">
-        <span class="status-dot ${dot}"></span><span class="al-name" data-key="${encodeURIComponent(cacheKey)}" data-original="${encodeURIComponent(item.name)}" title="Kliko për të korrigjuar përkthimin" onclick="editAlName(this)">${alName}</span>
+        <span class="status-dot ${dot}"></span><span class="al-name" data-key="${encodeURIComponent('tr_'+item.name)}" title="Kliko për të korrigjuar" onclick="editAlName(this)">${item.nameAL||item.name}</span>
         <small style="display:block;font-size:10px;color:#bbb;font-style:italic;margin-top:1px;margin-left:16px">${item.name}</small>
-        ${isEUR?'<span class="cur-badge">EUR</span>':''}
       </td>
-      <td>${fmtAmt(item.kosten,item.cur)}${isEUR?`<div class="eur-note">≈ ${fmtCHF(kostenCHF)}</div>`:''}</td>
-      <td style="color:var(--green)">${item.bezahlt>0?fmtAmt(item.bezahlt,item.cur):'—'}${isEUR&&item.bezahlt>0?`<div class="eur-note">≈ ${fmtCHF(bezahltCHF)}</div>`:''}</td>
+      <td>${fmtEUR(kostenEUR)}<div class="eur-note">≈ ${fmtCHF(kostenCHF)}</div></td>
+      <td style="color:var(--green)">${item.bezahlt>0?`${fmtEUR(bezahltEUR)}<div class="eur-note">≈ ${fmtCHF(bezahltCHF)}</div>`:'—'}</td>
       <td class="td-offen ${isPaid?'zero':'pos'}">${offenHtml}</td>`;
     tbody.appendChild(tr);
   });
 
-  document.getElementById('foot-total').innerHTML = fmtCHF(tK) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round(tK/EUR_RATE).toLocaleString('de-CH')}</div>`;
-  document.getElementById('foot-paid').innerHTML  = fmtCHF(tB) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round(tB/EUR_RATE).toLocaleString('de-CH')}</div>`;
-  document.getElementById('foot-open').innerHTML  = fmtCHF(tK-tB) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round((tK-tB)/EUR_RATE).toLocaleString('de-CH')}</div>`;
+  document.getElementById('foot-total').innerHTML = fmtEUR(tK/EUR_RATE) + `<div class="eur-note" style="color:var(--gold-light)">≈ ${fmtCHF(tK)}</div>`;
+  document.getElementById('foot-paid').innerHTML  = fmtEUR(tB/EUR_RATE) + `<div class="eur-note" style="color:var(--gold-light)">≈ ${fmtCHF(tB)}</div>`;
+  document.getElementById('foot-open').innerHTML  = fmtEUR((tK-tB)/EUR_RATE) + `<div class="eur-note" style="color:var(--gold-light)">≈ ${fmtCHF(tK-tB)}</div>`;
 }
 
 // ── EDIT ALBANIAN NAME ────────────────────────────────────────────────────────
