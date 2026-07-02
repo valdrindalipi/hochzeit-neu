@@ -182,6 +182,11 @@
   .todo-input { flex:1; min-width:160px; padding:10px 13px; border:1.5px solid var(--cream); border-radius:10px; font-family:'Inter',sans-serif; font-size:14px; background:var(--white); color:var(--ink); outline:none; transition:border-color .2s; }
   .todo-input:focus { border-color:var(--gold); }
   .cat-select { padding:10px 10px; border:1.5px solid var(--cream); border-radius:10px; font-family:'Inter',sans-serif; font-size:13px; background:var(--white); color:var(--ink); outline:none; cursor:pointer; }
+  .add-saving-btn { display:block; width:100%; margin-top:10px; padding:11px; background:none; border:1.5px dashed #A8D5B5; border-radius:12px; color:#2E7D32; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; }
+  .add-saving-btn:hover { background:#EDF7ED; border-style:solid; }
+  .row-del { color:#ddd; cursor:pointer; font-size:15px; padding:2px 5px; border-radius:5px; line-height:1; border:none; background:none; display:block; margin:auto; }
+  .row-del:hover { background:#fee; color:var(--red); }
+  input.name-input { border:none; outline:none; background:transparent; font-family:'Inter',sans-serif; font-size:14px; font-weight:500; color:var(--ink); width:100%; }
   .add-btn { background:var(--midnight); color:var(--gold); border:none; border-radius:10px; padding:10px 16px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
   .add-btn:hover { opacity:.85; }
   .todo-filter { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
@@ -399,22 +404,25 @@
 
   <!-- ══ GESPARTES ══ -->
   <div class="page" id="page-gespart">
-    <div class="hint">🏦 &nbsp; Gespartes Geld — Währung pro Zeile wählbar, Totals in CHF</div>
+    <div class="hint">🏦 &nbsp; Name anklicken zum Umbenennen · Betrag anklicken zum Ändern · Neue Zeile hinzufügen mit dem Button unten</div>
     <div class="section-title"><span>🏦 Gespartes Geld</span></div>
     <div class="table-wrap green-head"><table>
       <thead><tr>
-        <th style="width:45%">Quelle</th>
+        <th style="width:40%">Quelle</th>
         <th>Währung</th>
         <th>Betrag</th>
         <th>In CHF</th>
+        <th style="width:36px"></th>
       </tr></thead>
       <tbody id="savings-tbody"></tbody>
       <tfoot><tr>
         <td colspan="2">TOTAL GESPART</td>
         <td></td>
         <td id="savings-total">—</td>
+        <td></td>
       </tr></tfoot>
     </table></div>
+    <button class="add-saving-btn" onclick="addSavingsRow()">+ Neue Quelle hinzufügen</button>
   </div>
 
   <!-- ══ TODOS ══ -->
@@ -711,7 +719,9 @@ function renderSavings() {
     const isEUR = s.cur==='EUR';
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="td-name">${escHtml(s.name)}</td>
+      <td class="td-name">
+        <span class="editable" onclick="startEditName(this,${i},'savings')">${escHtml(s.name)}</span>
+      </td>
       <td style="text-align:center">
         <div class="cur-toggle">
           <button class="cur-btn ${!isEUR?'active':''}" onclick="setSavingsCur(${i},'CHF')">CHF</button>
@@ -721,7 +731,8 @@ function renderSavings() {
       <td style="text-align:right">
         <span class="editable" style="color:var(--green);font-weight:600" onclick="startEdit(this,${i},'betrag','savings')">${fmtAmt(s.betrag,s.cur)}</span>
       </td>
-      <td style="text-align:right;font-weight:600;color:var(--green)">${isEUR?fmtCHF(chf):'—'}</td>`;
+      <td style="text-align:right;font-weight:600;color:var(--green)">${isEUR?fmtCHF(chf):'—'}</td>
+      <td><button class="row-del" onclick="deleteSavingsRow(${i})" title="Löschen">×</button></td>`;
     tbody.appendChild(tr);
   });
 
@@ -734,6 +745,44 @@ function setSavingsCur(idx, cur) {
   state.savings[idx].cur = cur;
   const who = document.getElementById('who-input').value.trim()||'Unbekannt';
   pushState({ who, action:`${state.savings[idx].name}: Währung ${prev} → ${cur}`, type:'savings' });
+}
+
+function startEditName(span, idx, collection) {
+  if (span.classList.contains('editing')) return;
+  const prev = collection==='savings' ? state.savings[idx].name : state.items[idx].name;
+  span.classList.add('editing');
+  const input = document.createElement('input');
+  input.type='text'; input.className='name-input cell-input';
+  input.value=prev; input.style.textAlign='left'; input.style.width='100%';
+  span.textContent=''; span.appendChild(input);
+  input.focus(); input.select();
+  const commit = () => {
+    const v = input.value.trim() || prev;
+    if (collection==='savings') state.savings[idx].name = v;
+    else state.items[idx].name = v;
+    const who = document.getElementById('who-input').value.trim()||'Unbekannt';
+    if (v !== prev) pushState({ who, action:`"${prev}" umbenannt zu "${v}"`, type:collection==='savings'?'savings':'cost' });
+    else { span.classList.remove('editing'); span.textContent = escHtml(v); renderSavings(); }
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key==='Enter') { e.preventDefault(); input.blur(); }
+    if (e.key==='Escape') { span.classList.remove('editing'); span.textContent = escHtml(prev); }
+  });
+}
+
+function addSavingsRow() {
+  const who = document.getElementById('who-input').value.trim()||'Unbekannt';
+  state.savings.push({ name: 'Neue Quelle', betrag: 0, cur: 'CHF' });
+  pushState({ who, action:'Neue Sparquelle hinzugefügt', type:'savings' });
+}
+
+function deleteSavingsRow(idx) {
+  const name = state.savings[idx].name;
+  if (!confirm(`"${name}" löschen?`)) return;
+  const who = document.getElementById('who-input').value.trim()||'Unbekannt';
+  state.savings.splice(idx, 1);
+  pushState({ who, action:`Sparquelle gelöscht: "${name}"`, type:'savings' });
 }
 
 // ── KPIs ──────────────────────────────────────────────────────────────────────
