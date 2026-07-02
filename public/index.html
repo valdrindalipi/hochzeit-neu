@@ -337,11 +337,12 @@
     <span class="sync-text" id="sync-text">Verbinde…</span>
   </div>
   <div class="sync-right">
-    <div class="kurs-badge" onclick="refreshRate()" title="Klicken zum Aktualisieren">
+    <div class="kurs-badge" onclick="refreshRate()" title="Klicken zum manuellen Aktualisieren">
       <span>1 EUR =</span>
       <span class="rate-val" id="rate-display">…</span>
       <span>CHF</span>
-      <span style="font-size:10px;opacity:.5">↻</span>
+      <span id="rate-time" style="opacity:.5;font-size:10px"></span>
+      <span style="font-size:10px;opacity:.4">↻</span>
     </div>
     <div class="lang-toggle"><button class="lang-btn active" id="lang-de" onclick="setLang('de',this)">DE 🇩🇪</button><button class="lang-btn" id="lang-al" onclick="setLang('al',this)">AL 🇦🇱</button></div>
     <input class="who-input" id="who-input" placeholder="Valdrin / Katia" maxlength="20">
@@ -620,7 +621,10 @@ async function refreshRate() {
     const cached = localStorage.getItem('eur_rate');
     if (cached) EUR_RATE = parseFloat(cached);
   }
+  const ts = localStorage.getItem('eur_rate_ts');
+  const timeStr = ts ? new Date(parseInt(ts)).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}) : '';
   document.getElementById('rate-display').textContent = EUR_RATE.toFixed(4);
+  document.getElementById('rate-time').textContent = timeStr ? `· ${timeStr}` : '';
   renderAll();
 }
 
@@ -1399,8 +1403,18 @@ function applyTranslations() {
 const cachedRate=localStorage.getItem('eur_rate');
 const cachedTs=localStorage.getItem('eur_rate_ts');
 if(cachedRate){ EUR_RATE=parseFloat(cachedRate); document.getElementById('rate-display').textContent=EUR_RATE.toFixed(4); }
-// Refresh if older than 1h
-if(!cachedTs||Date.now()-cachedTs>3600000) refreshRate(); else document.getElementById('rate-display').textContent=EUR_RATE.toFixed(4);
+const timeStr = cachedTs ? new Date(parseInt(cachedTs)).toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'}) : '';
+if (timeStr) document.getElementById('rate-time').textContent = `· ${timeStr}`;
+// Refresh if older than 15min, otherwise schedule next refresh
+const ageMs = cachedTs ? Date.now()-parseInt(cachedTs) : Infinity;
+if(ageMs > 15*60*1000) {
+  refreshRate();
+} else {
+  document.getElementById('rate-display').textContent = EUR_RATE.toFixed(4);
+  setTimeout(refreshRate, 15*60*1000 - ageMs); // refresh when 15min is up
+}
+// Auto-refresh every 15 minutes thereafter
+setInterval(refreshRate, 15*60*1000);
 
 fetchState();
 setInterval(fetchState, POLL_MS);
