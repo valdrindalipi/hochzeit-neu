@@ -227,12 +227,15 @@ async function loadRate() {
   try {
     const cached = localStorage.getItem('eur_rate');
     const ts     = localStorage.getItem('eur_rate_ts');
-    if (cached && ts && Date.now()-ts < 3600000) { EUR_RATE=parseFloat(cached); return; }
-    const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=CHF');
-    const d = await r.json();
-    EUR_RATE = d.rates.CHF;
-    localStorage.setItem('eur_rate', EUR_RATE);
-    localStorage.setItem('eur_rate_ts', Date.now());
+    if (cached) EUR_RATE = parseFloat(cached);
+    // Refresh if older than 15min
+    if (!ts || Date.now()-parseInt(ts) > 15*60*1000) {
+      const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=CHF');
+      const d = await r.json();
+      EUR_RATE = d.rates.CHF;
+      localStorage.setItem('eur_rate', EUR_RATE);
+      localStorage.setItem('eur_rate_ts', Date.now());
+    }
   } catch {}
 }
 
@@ -406,7 +409,8 @@ function editAlName(span) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 loadRate().then(loadData);
-setInterval(loadData, 30000);
+setInterval(loadData, 30000);       // data every 30s
+setInterval(()=>loadRate().then(()=>state&&render()), 15*60*1000); // rate every 15min
 </script>
 </body>
 </html>
