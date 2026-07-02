@@ -94,12 +94,28 @@
   .legend { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px; font-size:12px; color:#888; }
   .legend-item { display:flex; align-items:center; gap:6px; }
 
+  .al-name { cursor:pointer; border-radius:4px; padding:1px 3px; transition:background .15s; }
+  .al-name:hover { background:var(--gold-pale); outline:1px dashed var(--gold); }
+  .al-name:hover::after { content:' ✎'; font-size:10px; color:var(--gold); opacity:.7; }
+  .al-name.editing { background:#fff; outline:2px solid var(--gold); }
+
   .translate-note { text-align:center; font-size:11px; color:#bbb; margin-top:6px; }
   .translate-note a { color:var(--gold); text-decoration:none; }
 
   footer { text-align:center; padding:20px; font-size:11px; color:#bbb; border-top:1px solid var(--cream); margin-top:20px; }
 
-  @media(max-width:600px) { .kpi-grid{grid-template-columns:1fr 1fr} }
+  @media(max-width:600px) {
+    .kpi-grid { grid-template-columns:1fr 1fr; }
+    .progress-section { flex-direction:column; align-items:center; gap:14px; }
+    .sync-bar { flex-direction:column; align-items:flex-start; gap:6px; padding:8px 12px; }
+    .filter-row { flex-wrap:wrap; gap:6px; }
+    thead th { padding:8px 8px; font-size:9px; letter-spacing:1px; }
+    td { padding:9px 8px; font-size:13px; }
+    tfoot td { padding:10px 8px; font-size:13px; }
+    .container { padding:18px 10px 48px; }
+    .table-wrap { overflow-x:auto; }
+    .legend { gap:10px; }
+  }
 </style>
 </head>
 <body>
@@ -268,7 +284,7 @@ async function loadData() {
 
     setSyncStatus('ok', 'Të dhënat janë të përditësuara · rifresohet çdo 30 sek.');
     document.getElementById('translate-note').innerHTML =
-      '🌐 Emrat e zërave janë përkthyer automatikisht nga gjermanishtja në shqip';
+      '🌐 Emrat janë përkthyer automatikisht · <strong>Kliko mbi emrin shqip për ta korrigjuar</strong> — korrigjimi ruhet përgjithmonë';
     render();
   } catch(e) {
     setSyncStatus('error', 'Gabim lidhjeje — duke u riprovuar…');
@@ -330,15 +346,15 @@ function render() {
         ? `EUR ${Math.round(item.kosten-item.bezahlt).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`
         : fmtCHF(offenCHF);
 
-    // Show Albanian name + German original below
-    const displayName = item.nameAL && item.nameAL !== item.name
-      ? `${item.nameAL}<small>${item.name}</small>`
-      : item.name;
+    // Show Albanian name — editable, with German original below
+    const alName = item.nameAL || item.name;
+    const cacheKey = 'tr_' + item.name;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="td-name">
-        <span class="status-dot ${dot}"></span>${displayName}
+        <span class="status-dot ${dot}"></span><span class="al-name" data-key="${encodeURIComponent(cacheKey)}" data-original="${encodeURIComponent(item.name)}" title="Kliko për të korrigjuar përkthimin" onclick="editAlName(this)">${alName}</span>
+        <small style="display:block;font-size:10px;color:#bbb;font-style:italic;margin-top:1px;margin-left:16px">${item.name}</small>
         ${isEUR?'<span class="cur-badge">EUR</span>':''}
       </td>
       <td>${fmtAmt(item.kosten,item.cur)}${isEUR?`<div class="eur-note">≈ ${fmtCHF(kostenCHF)}</div>`:''}</td>
@@ -350,6 +366,41 @@ function render() {
   document.getElementById('foot-total').innerHTML = fmtCHF(tK) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round(tK/EUR_RATE).toLocaleString('de-CH')}</div>`;
   document.getElementById('foot-paid').innerHTML  = fmtCHF(tB) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round(tB/EUR_RATE).toLocaleString('de-CH')}</div>`;
   document.getElementById('foot-open').innerHTML  = fmtCHF(tK-tB) + `<div class="eur-note" style="color:var(--gold-light)">≈ EUR ${Math.round((tK-tB)/EUR_RATE).toLocaleString('de-CH')}</div>`;
+}
+
+// ── EDIT ALBANIAN NAME ────────────────────────────────────────────────────────
+function editAlName(span) {
+  if (span.classList.contains('editing')) return;
+  const cacheKey = decodeURIComponent(span.dataset.key);
+  const current  = span.textContent.trim();
+  span.classList.add('editing');
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = current;
+  input.style.cssText = 'border:none;outline:none;background:transparent;font-family:Inter,sans-serif;font-size:14px;font-weight:500;color:var(--ink);width:100%;';
+  span.textContent = '';
+  span.appendChild(input);
+  input.focus();
+  input.select();
+
+  const commit = () => {
+    const val = input.value.trim() || current;
+    localStorage.setItem(cacheKey, val); // override auto-translation permanently
+    span.classList.remove('editing');
+    span.textContent = val;
+    // Also update in state
+    if (state) {
+      state.items.forEach(item => {
+        if ('tr_' + item.name === cacheKey) item.nameAL = val;
+      });
+    }
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { span.classList.remove('editing'); span.textContent = current; }
+  });
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
