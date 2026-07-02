@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💍 Hochzeit Valdrin & Katia · Weddingplanner Übersicht</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C9A84C; --gold-light: #E8D5A0; --gold-pale: #F5EDD6;
+    --midnight: #1A1A2E; --ink: #2C2C3E; --ivory: #FAF7F2; --cream: #F0EAD6;
+    --white: #FFFFFF; --green: #2E7D32; --orange: #C84B00; --red: #B71C1C;
+    --shadow: 0 4px 24px rgba(26,26,46,0.10);
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--ivory); color: var(--ink); min-height: 100vh; }
+
+  /* HEADER */
+  header { background: var(--midnight); padding: 36px 24px 28px; text-align: center; position: relative; overflow: hidden; }
+  header::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,168,76,.18) 0%,transparent 70%); pointer-events:none; }
+  .header-ornament { font-size:20px; letter-spacing:10px; color:var(--gold); opacity:.6; margin-bottom:10px; display:block; }
+  h1 { font-family:'Playfair Display',serif; font-size:clamp(20px,4vw,36px); font-weight:700; color:var(--white); }
+  h1 em { font-style:italic; color:var(--gold-light); }
+  .header-date { margin-top:8px; font-size:11px; font-weight:500; letter-spacing:3px; text-transform:uppercase; color:var(--gold); opacity:.85; }
+  .header-sub { margin-top:6px; font-size:12px; color:rgba(232,213,160,.5); }
+  .header-divider { margin:14px auto 0; width:60px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+
+  /* SYNC BAR */
+  .sync-bar { background:var(--midnight); padding:6px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,.05); }
+  .sync-dot { width:7px; height:7px; border-radius:50%; display:inline-block; margin-right:6px; }
+  .sync-dot.ok { background:#4CAF50; }
+  .sync-dot.syncing { background:var(--gold); animation:pulse 1s infinite; }
+  .sync-dot.error { background:var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+  .sync-text { color:rgba(255,255,255,.4); font-size:11px; }
+  .readonly-badge { background:rgba(201,168,76,.15); border:1px solid rgba(201,168,76,.3); border-radius:6px; padding:3px 10px; font-size:11px; font-weight:600; color:var(--gold); letter-spacing:.5px; }
+
+  /* CONTAINER */
+  .container { max-width: 860px; margin: 0 auto; padding: 28px 16px 64px; }
+
+  /* KPI */
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+  .kpi { background:var(--white); border-radius:14px; padding:16px; box-shadow:var(--shadow); border-top:3px solid var(--gold); }
+  .kpi-label { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:#888; margin-bottom:6px; }
+  .kpi-value { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--midnight); }
+  .kpi-value.green { color:var(--green); }
+  .kpi-value.orange { color:var(--orange); }
+  .kpi-sub { font-size:10px; color:#aaa; margin-top:3px; }
+
+  /* PROGRESS */
+  .progress-section { background:var(--white); border-radius:16px; box-shadow:var(--shadow); padding:20px 22px; margin-bottom:22px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+  .ring-wrap { flex-shrink:0; position:relative; width:80px; height:80px; }
+  .ring-wrap svg { transform:rotate(-90deg); }
+  .ring-bg { fill:none; stroke:var(--cream); stroke-width:8; }
+  .ring-fill { fill:none; stroke:url(#goldGrad); stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
+  .ring-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring-pct { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--midnight); }
+  .ring-sub-label { font-size:9px; color:#aaa; }
+  .progress-info { flex:1; min-width:160px; }
+  .progress-title { font-family:'Playfair Display',serif; font-size:15px; font-weight:600; color:var(--midnight); margin-bottom:5px; }
+  .progress-bar-wrap { background:var(--cream); border-radius:100px; height:8px; overflow:hidden; margin-bottom:6px; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-light)); border-radius:100px; transition:width 1s; }
+  .progress-detail { font-size:12px; color:#777; }
+  .progress-detail strong { color:var(--ink); }
+
+  /* FILTER */
+  .filter-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .section-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:600; color:var(--midnight); display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--gold-light),transparent); }
+  .filter-btn { padding:5px 13px; border-radius:100px; border:1.5px solid var(--cream); background:var(--white); font-size:12px; font-weight:600; cursor:pointer; color:#888; transition:all .15s; font-family:'Inter',sans-serif; }
+  .filter-btn:hover { border-color:var(--gold); color:var(--gold); }
+  .filter-btn.active { background:var(--midnight); border-color:var(--midnight); color:var(--gold-light); }
+
+  /* TABLE */
+  .table-wrap { background:var(--white); border-radius:16px; box-shadow:var(--shadow); overflow:hidden; margin-bottom:22px; }
+  table { width:100%; border-collapse:collapse; }
+  thead tr { background:var(--midnight); }
+  thead th { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold-light); padding:11px 14px; text-align:left; }
+  thead th:not(:first-child) { text-align:right; }
+  tbody tr { border-bottom:1px solid #F0EAD6; transition:background .15s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:var(--gold-pale); }
+  td { padding:12px 14px; font-size:14px; vertical-align:middle; }
+  td:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
+  .td-name { font-weight:500; }
+  .status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; }
+  .dot-paid { background:var(--green); }
+  .dot-partial { background:var(--gold); }
+  .dot-open { background:#ddd; }
+  .td-offen.zero { color:var(--green); font-weight:600; }
+  .td-offen.pos { color:var(--orange); font-weight:600; }
+  .cur-badge { display:inline-block; font-size:9px; font-weight:700; background:var(--midnight); color:var(--gold-light); border-radius:4px; padding:1px 5px; margin-left:5px; vertical-align:middle; }
+  .eur-note { font-size:10px; color:#aaa; font-style:italic; }
+  tfoot tr { background:var(--midnight); }
+  tfoot td { color:var(--gold-light); font-weight:700; font-size:14px; padding:12px 14px; font-family:'Playfair Display',serif; }
+  tfoot td:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
+
+  /* STATUS LEGEND */
+  .legend { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px; font-size:12px; color:#888; }
+  .legend-item { display:flex; align-items:center; gap:6px; }
+
+  /* LAST UPDATED */
+  .last-updated { text-align:center; font-size:11px; color:#bbb; margin-top:8px; }
+
+  footer { text-align:center; padding:20px; font-size:11px; color:#bbb; border-top:1px solid var(--cream); margin-top:32px; }
+
+  @media(max-width:600px) { .kpi-grid{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="header-ornament">✦ &nbsp; ✦ &nbsp; ✦</span>
+  <h1>Valdrin &amp; <em>Katia</em> Dalipi</h1>
+  <p class="header-date">23. Juli 2026</p>
+  <p class="header-sub">Weddingplanner Kostenübersicht · Nur Lesezugriff</p>
+  <div class="header-divider"></div>
+</header>
+
+<div class="sync-bar">
+  <div>
+    <span class="sync-dot syncing" id="sync-dot"></span>
+    <span class="sync-text" id="sync-text">Lade Daten…</span>
+  </div>
+  <span class="readonly-badge">👁 NUR LESEN</span>
+</div>
+
+<div class="container">
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">🎯 Gesamtkosten</div><div class="kpi-value" id="kpi-total">—</div><div class="kpi-sub">CHF</div></div>
+    <div class="kpi"><div class="kpi-label">✅ Bezahlt</div><div class="kpi-value green" id="kpi-paid">—</div><div class="kpi-sub">CHF</div></div>
+    <div class="kpi"><div class="kpi-label">⏳ Noch offen</div><div class="kpi-value orange" id="kpi-open">—</div><div class="kpi-sub">CHF</div></div>
+    <div class="kpi"><div class="kpi-label">📊 Fortschritt</div><div class="kpi-value gold" id="kpi-pct">—</div><div class="kpi-sub">% bezahlt</div></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-section">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 100 100" width="80" height="80">
+        <defs><linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#C9A84C"/>
+          <stop offset="100%" style="stop-color:#E8D5A0"/>
+        </linearGradient></defs>
+        <circle class="ring-bg" cx="50" cy="50" r="42"/>
+        <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
+      </svg>
+      <div class="ring-label"><div class="ring-pct" id="ring-pct">0%</div><div class="ring-sub-label">bezahlt</div></div>
+    </div>
+    <div class="progress-info">
+      <div class="progress-title">Zahlungsfortschritt</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+      <div class="progress-detail" id="progress-detail">—</div>
+    </div>
+  </div>
+
+  <!-- FILTER + TABLE -->
+  <div class="filter-row">
+    <div class="section-title" style="flex:none">💐 Hochzeitskosten</div>
+    <div style="flex:1"></div>
+    <button class="filter-btn active" onclick="setFilter('all',this)">Alle</button>
+    <button class="filter-btn" onclick="setFilter('open',this)">⏳ Offen</button>
+    <button class="filter-btn" onclick="setFilter('paid',this)">✓ Bezahlt</button>
+    <button class="filter-btn" onclick="setFilter('partial',this)">◑ Teilbezahlt</button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="status-dot dot-paid"></span> Vollständig bezahlt</div>
+    <div class="legend-item"><span class="status-dot dot-partial"></span> Teilweise bezahlt</div>
+    <div class="legend-item"><span class="status-dot dot-open"></span> Noch offen</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th style="width:45%">Posten</th>
+        <th>Kosten</th>
+        <th>Bezahlt</th>
+        <th>Offen</th>
+      </tr></thead>
+      <tbody id="cost-tbody"></tbody>
+      <tfoot><tr>
+        <td>TOTAL</td>
+        <td id="foot-total">—</td>
+        <td id="foot-paid">—</td>
+        <td id="foot-open">—</td>
+      </tr></tfoot>
+    </table>
+  </div>
+
+  <div class="last-updated" id="last-updated"></div>
+
+</div>
+
+<footer>💍 Hochzeit Valdrin &amp; Katia Dalipi · 23. Juli 2026 · Weddingplanner Ansicht</footer>
+
+<script>
+const API = '/api/data';
+let EUR_RATE = 0.955;
+let state = null;
+let activeFilter = 'all';
+
+// ── FORMAT ────────────────────────────────────────────────────────────────────
+const fmtCHF = n => 'CHF ' + Math.round(n).toLocaleString('de-CH');
+const fmtAmt = (n, cur) => cur + ' ' + Math.round(n).toLocaleString('de-CH');
+const toCHF  = (n, cur) => cur==='EUR' ? n*EUR_RATE : n;
+
+function setSyncStatus(s, txt) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + s;
+  document.getElementById('sync-text').textContent = txt;
+}
+
+// ── FETCH RATE ────────────────────────────────────────────────────────────────
+async function loadRate() {
+  try {
+    const cached = localStorage.getItem('eur_rate');
+    const ts     = localStorage.getItem('eur_rate_ts');
+    if (cached && ts && Date.now()-ts < 3600000) { EUR_RATE=parseFloat(cached); return; }
+    const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=CHF');
+    const d = await r.json();
+    EUR_RATE = d.rates.CHF;
+    localStorage.setItem('eur_rate', EUR_RATE);
+    localStorage.setItem('eur_rate_ts', Date.now());
+  } catch {}
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const r = await fetch(API, { signal: AbortSignal.timeout(6000) });
+    if (!r.ok) throw new Error();
+    let data = await r.json();
+    if (typeof data === 'string') data = JSON.parse(data);
+    if (typeof data === 'string') data = JSON.parse(data);
+    if (Array.isArray(data)) { const v=data[1]??data[0]; data=typeof v==='string'?JSON.parse(v):v; }
+    if (!data || !data.items) throw new Error();
+    state = data;
+    state.items.forEach(i=>{ if(!i.cur) i.cur='CHF'; });
+    setSyncStatus('ok', 'Aktuell · wird alle 30 Sek. aktualisiert');
+    document.getElementById('last-updated').textContent = 'Stand: ' + new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+    render();
+  } catch {
+    setSyncStatus('error', 'Verbindungsfehler — versuche erneut…');
+  }
+}
+
+// ── FILTER ────────────────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  if (!state) return;
+
+  const items = state.items;
+  let tK=0, tB=0;
+  items.forEach(item => {
+    tK += toCHF(item.kosten, item.cur);
+    tB += toCHF(item.bezahlt, item.cur);
+  });
+  const pct = tK > 0 ? Math.round(tB/tK*100) : 0;
+
+  // KPIs
+  document.getElementById('kpi-total').textContent = Math.round(tK).toLocaleString('de-CH');
+  document.getElementById('kpi-paid').textContent  = Math.round(tB).toLocaleString('de-CH');
+  document.getElementById('kpi-open').textContent  = Math.round(tK-tB).toLocaleString('de-CH');
+  document.getElementById('kpi-pct').textContent   = pct + '%';
+
+  // Progress ring
+  document.getElementById('ring-fill').style.strokeDashoffset = 263.9-(pct/100)*263.9;
+  document.getElementById('ring-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-detail').innerHTML =
+    `<strong>${fmtCHF(tB)}</strong> von <strong>${fmtCHF(tK)}</strong> bezahlt`;
+
+  // Table
+  const tbody = document.getElementById('cost-tbody');
+  tbody.innerHTML = '';
+
+  items.forEach(item => {
+    const kostenCHF  = toCHF(item.kosten, item.cur);
+    const bezahltCHF = toCHF(item.bezahlt, item.cur);
+    const offenCHF   = kostenCHF - bezahltCHF;
+    const isPaid     = offenCHF <= 0;
+    const isPartial  = !isPaid && item.bezahlt > 0;
+    const isEUR      = item.cur === 'EUR';
+
+    if (activeFilter==='open'    && (isPaid||isPartial)) return;
+    if (activeFilter==='paid'    && !isPaid) return;
+    if (activeFilter==='partial' && !isPartial) return;
+
+    const dot = isPaid?'dot-paid':(isPartial?'dot-partial':'dot-open');
+    const offenHtml = isPaid ? '<span style="color:var(--green)">✓ bezahlt</span>'
+      : isEUR ? `EUR ${Math.round(item.kosten-item.bezahlt).toLocaleString('de-CH')}<div class="eur-note">≈ ${fmtCHF(offenCHF)}</div>`
+      : fmtCHF(offenCHF);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-name">
+        <span class="status-dot ${dot}"></span>${item.name}
+        ${isEUR?'<span class="cur-badge">EUR</span>':''}
+      </td>
+      <td>${fmtAmt(item.kosten,item.cur)}${isEUR?`<div class="eur-note">≈ ${fmtCHF(kostenCHF)}</div>`:''}</td>
+      <td style="color:var(--green)">${item.bezahlt>0?fmtAmt(item.bezahlt,item.cur):'—'}${isEUR&&item.bezahlt>0?`<div class="eur-note">≈ ${fmtCHF(bezahltCHF)}</div>`:''}</td>
+      <td class="td-offen ${isPaid?'zero':'pos'}">${offenHtml}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('foot-total').textContent = fmtCHF(tK);
+  document.getElementById('foot-paid').textContent  = fmtCHF(tB);
+  document.getElementById('foot-open').textContent  = fmtCHF(tK-tB);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadRate().then(loadData);
+setInterval(loadData, 30000); // refresh every 30s
+setTimeout(()=>{
+  document.getElementById('ring-fill').style.transition='stroke-dashoffset 1s';
+},100);
+</script>
+</body>
+</html>
