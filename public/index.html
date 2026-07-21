@@ -402,7 +402,8 @@
         <th class="cost-table-currency">Währung</th>
         <th>Kosten</th>
         <th>Bezahlt</th>
-        <th>Offen (CHF)</th>
+        <th>Offen</th>
+        <th style="width:36px"></th>
       </tr></thead>
       <tbody id="cost-tbody"></tbody>
       <tfoot><tr>
@@ -411,8 +412,10 @@
         <td id="foot-total">—</td>
         <td id="foot-paid">—</td>
         <td id="foot-open">—</td>
+        <td></td>
       </tr></tfoot>
     </table></div>
+    <button class="add-saving-btn" style="border-color:var(--gold-light);color:var(--gold)" onclick="addCostRow()">+ Neuen Posten hinzufügen</button>
 
     <div class="section-title"><span>📊 Finanzübersicht</span></div>
 
@@ -800,7 +803,8 @@ function renderCostTable() {
       <td><span class="editable" onclick="startEdit(this,${i},'bezahlt','items')">${fmtAmt(item.bezahlt,item.cur)}</span>
           ${isEUR?`<div class="eur-note">≈ ${fmtCHF(bezahltCHF)}</div>`:''}
       </td>
-      <td class="td-offen ${isPaid?'zero':'pos'}">${offenHtml}</td>`;
+      <td class="td-offen ${isPaid?'zero':'pos'}">${offenHtml}</td>
+      <td><button class="row-del" onclick="deleteCostRow(${i})" title="Löschen">×</button></td>`;
 
     // Drag & Drop events
     tr.addEventListener('dragstart', e => {
@@ -943,6 +947,20 @@ function startEditName(span, idx, collection) {
     if (e.key==='Enter') { e.preventDefault(); input.blur(); }
     if (e.key==='Escape') { span.classList.remove('editing'); span.textContent = escHtml(prev); }
   });
+}
+
+function addCostRow() {
+  const who = document.getElementById('who-input').value.trim()||'Unbekannt';
+  state.items.push({ name: 'Neuer Posten', kosten: 0, bezahlt: 0, cur: 'CHF' });
+  pushState({ who, action:'Neuer Posten hinzugefügt', type:'cost' });
+}
+
+function deleteCostRow(idx) {
+  const name = state.items[idx].name;
+  if (!confirm(`"${name}" löschen?`)) return;
+  const who = document.getElementById('who-input').value.trim()||'Unbekannt';
+  state.items.splice(idx, 1);
+  pushState({ who, action:`Posten gelöscht: "${name}"`, type:'cost' });
 }
 
 function addSavingsRow() {
@@ -1231,7 +1249,7 @@ const T = {
     th_waehrung:      'Währung',
     th_kosten:        'Kosten',
     th_bezahlt:       'Bezahlt',
-    th_offen:         'Offen (CHF)',
+    th_offen:         'Offen',
     th_quelle:        'Quelle',
     th_betrag:        'Betrag',
     th_inchf:         'In CHF',
@@ -1284,7 +1302,7 @@ const T = {
     th_waehrung:      'Valuta',
     th_kosten:        'Kostoja',
     th_bezahlt:       'Paguar',
-    th_offen:         'Pa Paguar (CHF)',
+    th_offen:         'Pa Paguar',
     th_quelle:        'Burimi',
     th_betrag:        'Shuma',
     th_inchf:         'Në CHF',
@@ -1359,16 +1377,16 @@ function applyTranslations() {
   if (secTitles[4]) secTitles[4].textContent = L.sec_history;
   // Table headers
   const ths = document.querySelectorAll('#page-kosten thead th');
-  if (ths[0]) ths[0].textContent = L.th_posten;
-  if (ths[1]) ths[1].textContent = L.th_waehrung;
-  if (ths[2]) ths[2].textContent = L.th_kosten;
-  if (ths[3]) ths[3].textContent = L.th_bezahlt;
-  if (ths[4]) ths[4].textContent = L.th_offen;
+  if (ths[1]) ths[1].textContent = L.th_posten;
+  if (ths[2]) ths[2].textContent = L.th_waehrung;
+  if (ths[3]) ths[3].textContent = L.th_kosten;
+  if (ths[4]) ths[4].textContent = L.th_bezahlt;
+  if (ths[5]) ths[5].textContent = L.th_offen;
   const ths2 = document.querySelectorAll('#page-gespart thead th');
-  if (ths2[0]) ths2[0].textContent = L.th_quelle;
-  if (ths2[1]) ths2[1].textContent = L.th_waehrung;
-  if (ths2[2]) ths2[2].textContent = L.th_betrag;
-  if (ths2[3]) ths2[3].textContent = L.th_inchf;
+  if (ths2[1]) ths2[1].textContent = L.th_quelle;
+  if (ths2[2]) ths2[2].textContent = L.th_waehrung;
+  if (ths2[3]) ths2[3].textContent = L.th_betrag;
+  if (ths2[4]) ths2[4].textContent = L.th_inchf;
   // Summary labels
   // Overview labels (dynamic, set via renderOverview)
   // Finance labels
